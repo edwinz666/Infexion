@@ -18,6 +18,7 @@ class Agent:
         Initialise the agent.
         """
         self._color = color
+        self._board = {}
         match color:
             case PlayerColor.RED:
                 print("Testing: I am playing as red")
@@ -32,8 +33,7 @@ class Agent:
         q = random.randint(0,6)
 
 
-        match self._color:
-            
+        match self._color:          
             case PlayerColor.RED:
                 r = random.randint(0,6)
                 q = random.randint(0,6)
@@ -41,7 +41,7 @@ class Agent:
                 exists = False
                 for i in range(0,6):
                     for j in range(0,6):
-                        if referee.items() == (r,q):
+                        if (r,q) in self._board.keys():
                             exists = True
                             
                 if exists:
@@ -55,7 +55,7 @@ class Agent:
                 exists = False
                 for i in range(0,6):
                     for j in range(0,6):
-                        if referee.items() == (r,q):
+                        if (r,q) in self._board.keys():
                             exists = True
                 if exists:
                     return SpreadAction(HexPos(r, q), HexDir(Up))
@@ -70,9 +70,14 @@ class Agent:
             case SpawnAction(cell):
                 print(f"Testing: {color} SPAWN at {cell}")
                 pass
+                
+                # idk
+                self._board[cell] = (self._color, 1)
             case SpreadAction(cell, direction):
                 print(f"Testing: {color} SPREAD from {cell}, {direction}")
                 pass
-
+                
+                # we can use method from Project A
+                # update the self._board with spread(cell, direction)
 
    
