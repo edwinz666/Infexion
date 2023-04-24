@@ -44,3 +44,6 @@ class Agent:
             case SpreadAction(cell, direction):
                 print(f"Testing: {color} SPREAD from {cell}, {direction}")
                 pass
+
+    def action(self):
+        return;
