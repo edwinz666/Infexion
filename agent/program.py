@@ -4,6 +4,8 @@
 from referee.game import \
     PlayerColor, Action, SpawnAction, SpreadAction, HexPos, HexDir
 
+import random
+
 # This is the entry point for your game playing agent. Currently the agent
 # simply spawns a token at the centre of the board if playing as RED, and
 # spreads a token at the centre of the board if playing as BLUE. This is
@@ -26,12 +28,39 @@ class Agent:
         """
         Return the next action to take.
         """
+        r = random.randint(0,6)
+        q = random.randint(0,6)
+
+
         match self._color:
+            
             case PlayerColor.RED:
-                return SpawnAction(HexPos(3, 3))
+                r = random.randint(0,6)
+                q = random.randint(0,6)
+
+                exists = False
+                for i in range(0,6):
+                    for j in range(0,6):
+                        if referee.items() == (r,q):
+                            exists = True
+                            
+                if exists:
+                    return SpreadAction(HexPos(r, q), HexDir(Up))
+                else:
+                    return SpawnAction(HexPos(r, q))
             case PlayerColor.BLUE:
-                # This is going to be invalid... BLUE never spawned!
-                return SpreadAction(HexPos(3, 3), HexDir.Up)
+                r = random.randint(0,6)
+                q = random.randint(0,6)
+
+                exists = False
+                for i in range(0,6):
+                    for j in range(0,6):
+                        if referee.items() == (r,q):
+                            exists = True
+                if exists:
+                    return SpreadAction(HexPos(r, q), HexDir(Up))
+                else:
+                    return SpawnAction(HexPos(r, q))
 
     def turn(self, color: PlayerColor, action: Action, **referee: dict):
         """
@@ -45,5 +74,5 @@ class Agent:
                 print(f"Testing: {color} SPREAD from {cell}, {direction}")
                 pass
 
-    def action(self):
-        return;
+
+   
