@@ -13,7 +13,8 @@ import random
 # intended to serve as an example of how to use the referee API -- obviously
 # this is not a valid strategy for actually playing the game!
 
-
+MAX_POWER = 6
+DIM = 6
 
 class Agent:
     def __init__(self, color: PlayerColor, **referee: dict):
@@ -146,11 +147,11 @@ class InternalBoard:
             newR = position[0] + direction[0]
             newQ = position[1] + direction[1]
 
-            # require both r and q to be positive, and also less than the dimension
-            if newR < 0:
-                newR = self.DIM - 1
-            elif newR >= self.DIM:
-                newR = 0
+        # require both r and q to be positive, and also less than the dimension
+        if newR < 0:
+            newR = DIM - 1
+        elif newR >= DIM:
+            newR = 0
 
             if newQ < 0:
                 newQ = self.DIM - 1
