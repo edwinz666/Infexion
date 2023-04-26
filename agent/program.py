@@ -12,7 +12,8 @@ import random
 # intended to serve as an example of how to use the referee API -- obviously
 # this is not a valid strategy for actually playing the game!
 
-
+MAX_POWER = 6
+DIM = 6
 
 class Agent:
     def __init__(self, color: PlayerColor, **referee: dict):
@@ -131,6 +132,13 @@ def findNewPosition(position, direction):
         newR = position[0] + direction[0]
         newQ = position[1] + direction[1]
 
+
+        # get new coordinates using modulus, returns remainder
+        """ 
+        # newR = ( position[0] + direction[0] ) % DIM
+        # newQ = ( position[1] + direction[1] ) % DIM
+        """
+        
         # require both r and q to be positive, and also less than the dimension
         if newR < 0:
             newR = DIM - 1
