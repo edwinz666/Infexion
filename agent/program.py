@@ -142,10 +142,10 @@ class InternalBoard:
             internalBoard.pop(piece)
 
     def findNewPosition(self, position, direction):
-            """ Finds the destination of a node after a move in a direction """
+        """ Finds the destination of a node after a move in a direction """
 
-            newR = position[0] + direction[0]
-            newQ = position[1] + direction[1]
+        newR = position[0] + direction[0]
+        newQ = position[1] + direction[1]
 
         # require both r and q to be positive, and also less than the dimension
         if newR < 0:
@@ -153,10 +153,10 @@ class InternalBoard:
         elif newR >= DIM:
             newR = 0
 
-            if newQ < 0:
-                newQ = self.DIM - 1
-            elif newQ >= self.DIM:
-                newQ = 0
+        if newQ < 0:
+            newQ = self.DIM - 1
+        elif newQ >= self.DIM:
+            newQ = 0
 
             return (newR, newQ)
 
