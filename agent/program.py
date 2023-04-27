@@ -39,41 +39,30 @@ class Agent:
                 r = random.randint(0,6)
                 q = random.randint(0,6)
                 print(internalBoard)
-                exists = False
-               
+                
                 if self.internalBoard.spawn((r,q), 'r') == True:
-                    exists = False
+                    self.internalBoard.spawn((r,q), 'r')
+                    return SpawnAction(HexPos(r, q))
                 else:
-                    exists = True
-                            
-                if exists:
                     for piece in internalBoard.keys():
                         if internalBoard.get(piece)[0] == 'r':
-                            #print("true")
                             self.internalBoard.spread(piece,  (1,-1))
-                            break
-                    return SpreadAction(HexPos(r, q), HexDir.Up)
-                else:
-                    return SpawnAction(HexPos(r, q))
+                            return SpreadAction(HexPos(piece[0], piece[1]), HexDir.Up)
+                    
             case PlayerColor.BLUE:
                 r = random.randint(0,6)
                 q = random.randint(0,6)
 
-                exists = False
-               
                 if self.internalBoard.spawn((r,q), 'b') == True:
-                    exists = False
+                    self.internalBoard.spawn((r,q), 'b')
+                    print(internalBoard.get((r,q)))
+                    return SpawnAction(HexPos(r, q))
                 else:
-                    exists = True
-                            
-                if exists:
                     for piece in internalBoard.keys():
                         if internalBoard.get(piece)[0] == 'b':
-                            self.internalBoard.spread(piece, (1,-1))
-                            break
-                    return SpreadAction(HexPos(r, q), HexDir.Up)
-                else:
-                    return SpawnAction(HexPos(r, q))
+                            self.internalBoard.spread(piece,  (1,-1))
+                            return SpreadAction(HexPos(piece[0], piece[1]), HexDir.Up)
+                   
 
     def turn(self, color: PlayerColor, action: Action, **referee: dict):
         """
