@@ -4,6 +4,7 @@
 from dataclasses import dataclass
 from referee.game import \
     PlayerColor, Action, SpawnAction, SpreadAction, HexPos, HexDir
+from referee.utils import render_board
 
 import random
 
@@ -16,6 +17,10 @@ import random
 
 DIM = 7
 MAX_POWER = DIM-1
+
+################################################################################
+############################## Agent Class #####################################
+################################################################################
 
 class Agent:
     def __init__(self, color: PlayerColor, **referee: dict):
@@ -40,6 +45,8 @@ class Agent:
             colour = 'b'
         
         # algorithm goes here: 
+
+        # temperary random algorithm
         r = random.randint(0,6)
         q = random.randint(0,6)
         
@@ -59,6 +66,7 @@ class Agent:
     def turn(self, color: PlayerColor, action: Action, **referee: dict):
         """
         Update the agent with the last player's action.
+        Note: this updates your agent as well.
         """
         
         match action:
@@ -76,13 +84,15 @@ class Agent:
                 return
 
 
+################################################################################
+######################### Inetrnal Board Class #################################
+################################################################################
+
 @dataclass
 class InternalBoard:
     """
     A data structure to represent the internal state of the board.
     """
-    DIM = 7
-    MAX_POWER = 6
     
     def __init__(self):
         """
@@ -160,57 +170,7 @@ class InternalBoard:
     
     def getKeys(self):
         return self.internalBoard.keys()
-
-
-'''helper function so render the board'''
-def render_board(board: 'dict[tuple, tuple]', ansi=False) -> str:
-    """
-    Visualise the Infexion hex board via a multiline ASCII string.
-    The layout corresponds to the axial coordinate system as described in the
-    game specification document.
     
-    Example:
-
-        >>> board = {
-        ...     (5, 6): ("r", 2),
-        ...     (1, 0): ("b", 2),
-        ...     (1, 1): ("b", 1),
-        ...     (3, 2): ("b", 1),
-        ...     (1, 3): ("b", 3),
-        ... }
-        >>> print_board(board, ansi=False)
-
-                                ..     
-                            ..      ..     
-                        ..      ..      ..     
-                    ..      ..      ..      ..     
-                ..      ..      ..      ..      ..     
-            b2      ..      b1      ..      ..      ..     
-        ..      b1      ..      ..      ..      ..      ..     
-            ..      ..      ..      ..      ..      r2     
-                ..      b3      ..      ..      ..     
-                    ..      ..      ..      ..     
-                        ..      ..      ..     
-                            ..      ..     
-                                ..     
-    """
-    dim = 7
-    output = ""
-    for row in range(dim * 2 - 1):
-        output += "    " * abs((dim - 1) - row)
-        for col in range(dim - abs(row - (dim - 1))):
-            # Map row, col to r, q
-            r = max((dim - 1) - row, 0) + col
-            q = max(row - (dim - 1), 0) + col
-            if (r, q) in board:
-                color, power = board[(r, q)]
-                text = f"{color}{power}".center(4)
-                if ansi:
-                    output += apply_ansi(text, color=color, bold=False)
-                else:
-                    output += text
-            else:
-                output += " .. "
-            output += "    "
-        output += "\n"
-    return output
+################################################################################
+############################### End Program ####################################
+################################################################################
