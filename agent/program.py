@@ -13,8 +13,9 @@ import random
 # intended to serve as an example of how to use the referee API -- obviously
 # this is not a valid strategy for actually playing the game!
 
-MAX_POWER = 6
-DIM = 6
+
+DIM = 7
+MAX_POWER = DIM-1
 
 class Agent:
     def __init__(self, color: PlayerColor, **referee: dict):
@@ -22,7 +23,7 @@ class Agent:
         Initialise the agent.
         """
         self._color = color
-        self.internalBoard = InternalBoard()
+        self.board = InternalBoard()
         match color:
             case PlayerColor.RED:
                 print("Testing: I am playing as red")
@@ -33,59 +34,48 @@ class Agent:
         """
         Return the next action to take.
         """
+        if self._color == PlayerColor.RED:
+            colour = 'r'
+        else:
+            colour = 'b'
         
-        match self._color:          
-            case PlayerColor.RED:
-                r = random.randint(0,6)
-                q = random.randint(0,6)
-                print(internalBoard)
+        # algorithm goes here: 
+        r = random.randint(0,6)
+        q = random.randint(0,6)
+        
                 
-                if self.internalBoard.spawn((r,q), 'r') == True:
-                    self.internalBoard.spawn((r,q), 'r')
-                    return SpawnAction(HexPos(r, q))
-                else:
-                    for piece in internalBoard.keys():
-                        if internalBoard.get(piece)[0] == 'r':
-                            self.internalBoard.spread(piece,  (1,-1))
-                            return SpreadAction(HexPos(piece[0], piece[1]), HexDir.Up)
-                    
-            case PlayerColor.BLUE:
-                r = random.randint(0,6)
-                q = random.randint(0,6)
-
-                if self.internalBoard.spawn((r,q), 'b') == True:
-                    self.internalBoard.spawn((r,q), 'b')
-                    print(internalBoard.get((r,q)))
-                    return SpawnAction(HexPos(r, q))
-                else:
-                    for piece in internalBoard.keys():
-                        if internalBoard.get(piece)[0] == 'b':
-                            self.internalBoard.spread(piece,  (1,-1))
-                            return SpreadAction(HexPos(piece[0], piece[1]), HexDir.Up)
+        if (r,q) not in self.board.internalBoard:
+            return SpawnAction(HexPos(r, q))
+        else:
+            for piece in self.board.internalBoard.keys():
+                if self.board.internalBoard.get(piece)[0] == colour:
+                    r = piece[0]
+                    q = piece[1]
+                    break
+            return SpreadAction(HexPos(r, q), HexDir.Up)
+                
                    
 
     def turn(self, color: PlayerColor, action: Action, **referee: dict):
         """
         Update the agent with the last player's action.
         """
+        
         match action:
             case SpawnAction(cell):
                 print(f"Testing: {color} SPAWN at {cell}")
                 c = 'r'
                 if (color == PlayerColor.BLUE):
                     c = 'b'
-                self.internalBoard.spawn((cell.r, cell.q), c)
-                
-                # idk
-                #self._board[cell] = (self._color, 1)
+                self.board.spawn((cell.r, cell.q), c)
+                return
+                  
             case SpreadAction(cell, direction):
                 print(f"Testing: {color} SPREAD from {cell}, {direction}")
-                self.internalBoard.spread((cell.r, cell.q), (1,-1))
-                
-                # we can use method from Project A
-                # update the self._board with spread(cell, direction)
+                self.board.spread((cell.r, cell.q), (1, -1))
+                return
 
-internalBoard: dict[tuple, tuple] = {}
+
 @dataclass
 class InternalBoard:
     """
@@ -98,37 +88,38 @@ class InternalBoard:
         """
         Initialise the internal board.
         """
+        self.internalBoard: dict[tuple, tuple] = {}
 
     def spawn(self, position: tuple, color):
             """ Spawns a piece (its position) on the board """
             
-            if position in internalBoard.keys():
+            if position in self.internalBoard.keys():
                 return False
             else:
-                internalBoard[position] = (color, 1)
+                self.internalBoard[position] = (color, 1)
                 return True
         
     '''helper functions for spreading a thingo'''
     def spread(self, piece: tuple, direction: tuple):
-            """ Spreads a piece (its position) in a direction on the board """
+        """ Spreads a piece (its position) in a direction on the board """
+        colour = self.internalBoard.get(piece)[0]
+        spreadDistance = self.internalBoard.get(piece)[1]
 
-            colour = internalBoard.get(piece)[0]
-            spreadDistance = internalBoard.get(piece)[1]
+        temp = piece 
 
-            temp = piece 
+        # go through all the spread distance
+        while spreadDistance:
+            newPosition = self.findNewPosition(temp, direction)
+            self.spreadToNode(newPosition, colour)
+
+            # set temp to new position to use again next iteration
+            temp = newPosition
+
+            spreadDistance -= 1
+
+        # delete original piece from internalBoard
+        del self.internalBoard[piece]
             
-            # go through all the spread distance
-            while spreadDistance:
-                newPosition = self.findNewPosition(temp, direction)
-                self.spreadToNode(newPosition, internalBoard, colour)
-
-                # set temp to new position to use again next iteration
-                temp = newPosition
-
-                spreadDistance -= 1
-
-            # spreading piece leaves an empty node
-            internalBoard.pop(piece)
 
     def findNewPosition(self, position, direction):
         """ Finds the destination of a node after a move in a direction """
@@ -143,30 +134,83 @@ class InternalBoard:
             newR = 0
 
         if newQ < 0:
-            newQ = self.DIM - 1
-        elif newQ >= self.DIM:
+            newQ = DIM - 1
+        elif newQ >= DIM:
             newQ = 0
 
-            return (newR, newQ)
+        return (newR, newQ)
 
-    def spreadToNode(self, newPosition, board, colour):
+    def spreadToNode(self, newPosition, colour):
             """ 
             Increments power of a node and changes its colour if it is an enemy node, 
             or removing the node if the max power is reached 
             """
-
-            if newPosition not in board.keys():
-                board[newPosition] = (colour, 1)
+            if newPosition not in self.internalBoard.keys():
+                self.internalBoard[newPosition] = (colour, 1)    
             else:
-                power = board.get(newPosition)[1]
-                if power == self.MAX_POWER:
-                    board.pop(newPosition)
+                power = self.internalBoard.get(newPosition)[1]
+                if power == MAX_POWER:
+                    self.internalBoard.pop(newPosition)
                 else:
-                    board[newPosition] = (colour, 1 + power)
+                    self.internalBoard[newPosition] = (colour, 1 + power)
             return
     
     def getValues(self):
-        return internalBoard.values()
+        return self.internalBoard.values()
     
     def getKeys(self):
-        return internalBoard.keys()
+        return self.internalBoard.keys()
+
+
+'''helper function so render the board'''
+def render_board(board: 'dict[tuple, tuple]', ansi=False) -> str:
+    """
+    Visualise the Infexion hex board via a multiline ASCII string.
+    The layout corresponds to the axial coordinate system as described in the
+    game specification document.
+    
+    Example:
+
+        >>> board = {
+        ...     (5, 6): ("r", 2),
+        ...     (1, 0): ("b", 2),
+        ...     (1, 1): ("b", 1),
+        ...     (3, 2): ("b", 1),
+        ...     (1, 3): ("b", 3),
+        ... }
+        >>> print_board(board, ansi=False)
+
+                                ..     
+                            ..      ..     
+                        ..      ..      ..     
+                    ..      ..      ..      ..     
+                ..      ..      ..      ..      ..     
+            b2      ..      b1      ..      ..      ..     
+        ..      b1      ..      ..      ..      ..      ..     
+            ..      ..      ..      ..      ..      r2     
+                ..      b3      ..      ..      ..     
+                    ..      ..      ..      ..     
+                        ..      ..      ..     
+                            ..      ..     
+                                ..     
+    """
+    dim = 7
+    output = ""
+    for row in range(dim * 2 - 1):
+        output += "    " * abs((dim - 1) - row)
+        for col in range(dim - abs(row - (dim - 1))):
+            # Map row, col to r, q
+            r = max((dim - 1) - row, 0) + col
+            q = max(row - (dim - 1), 0) + col
+            if (r, q) in board:
+                color, power = board[(r, q)]
+                text = f"{color}{power}".center(4)
+                if ansi:
+                    output += apply_ansi(text, color=color, bold=False)
+                else:
+                    output += text
+            else:
+                output += " .. "
+            output += "    "
+        output += "\n"
+    return output
