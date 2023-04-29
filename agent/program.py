@@ -63,7 +63,8 @@ class Agent:
         # each move played should have something stored somewhere as (movePlayed, territoryEvaluation)
         # check for winning positions too?
 
-        # after a SPREAD action:
+        # We will check all SPREAD actions first ... 
+        # for each SPREAD action possible in position:
         #   if capture made by that SPREAD action: (define function to check for captures)?
         #       do MINIMAX recursion, but ONLY capture moves by both players moving forward in this MINIMAX algorithm
         #       --> this will result in a final board position after captures --> return the territory evaluation for this board
@@ -72,15 +73,17 @@ class Agent:
         #      (we only consider territories after captures have ended)
         #   if no capture made by that SPREAD action:
         #       --> simply return the territory evaluation
+        #
+        # After checking all SPREAD actions ... do we consider SPAWN actions?
         # if the best territory evaluation after considering all SPREAD moves is better than original evaluation:
         #     SKIP checking spawn actions? (is it possible to have a better spawn move if a 
         #                                   spread move results in an improvement of territory?)
-        #      --> just play the best spread move we found then?
+        #      --> just return and play the best spread move we found then?
         # otherwise (AKA SPREAD moves don't improve our position, then we consider SPAWN moves):
-        #   check all spawn moves? --> get evaluations for those moves,
-        #   the moves that don't a series of captures also has a territory evaluation 
+        #   for each SPAWN action possible in position:
+        #       get evaluations for the SPAWN action
         # 
-        #   NOW have list of moves and their evaluations ...
+        #   NOW have list of ALL moves and their evaluations ...
         #   pick the move with best evaluation and play
 
         # temperary random algorithm
