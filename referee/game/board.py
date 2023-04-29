@@ -144,7 +144,7 @@ class Board:
                 # Map row, col to r, q
                 r = max((dim - 1) - row, 0) + col
                 q = max(row - (dim - 1), 0) + col
-                if HexPos(r, q) in self._state:
+                if self._cell_occupied(HexPos(r, q)):
                     color, power = self._state[HexPos(r, q)]
                     color = "r" if color == PlayerColor.RED else "b"
                     text = f"{color}{power}".center(4)
@@ -221,6 +221,9 @@ class Board:
     def _within_bounds(self, coord: HexPos) -> bool:
         r, q = coord
         return 0 <= r < BOARD_N and 0 <= q < BOARD_N
+    
+    def _cell_occupied(self, coord: HexPos) -> bool:
+        return self._state[coord].power > 0
 
     def _validate_action_pos_input(self, pos: HexPos):
         if type(pos) != HexPos or not self._within_bounds(pos):
@@ -257,7 +260,7 @@ class Board:
                 f"Total board power max reached ({MAX_TOTAL_POWER})", 
                 self._turn_color)
 
-        if self._state[cell].power > 0:
+        if self._cell_occupied(cell):
             raise IllegalActionException(
                 f"Cell {cell} is occupied.", self._turn_color)
 

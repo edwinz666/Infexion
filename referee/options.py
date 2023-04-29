@@ -8,7 +8,7 @@ from .game import PlayerColor, GAME_NAME, NUM_PLAYERS
 
 # Program information:
 PROGRAM = "referee"
-VERSION = "2023.0.0"
+VERSION = "2023.0.1"
 DESCRIP = (
     f"Conduct a game of {GAME_NAME} between {NUM_PLAYERS} Agent classes."
 )
