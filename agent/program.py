@@ -45,6 +45,17 @@ class Agent:
             colour = 'b'
         
         # algorithm goes here: 
+        # pseudocode ...
+        # MCTS(self.board, colour) ...
+        #   tree = Starting from the root of the tree, use a selection strategy
+        #          to choose successor states until we reach a leaf node of the tree
+        #   while IsTimeRemaining:
+        #       leaf = select(tree)
+        #       child = expand(leaf)
+        #       result = simulate(child)
+        #       backPropogate(result, child)
+        #       return the move in actions(state) whose node has the highest number of playouts
+
 
         # temperary random algorithm
         r = random.randint(0,6)
