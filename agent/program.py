@@ -127,7 +127,7 @@ class Agent:
             return SpreadAction(HexPos(position[0], position[1]), direction)
                 
                    
-
+    ### DOES IT ACCOUNT FOR OPPONENT"S SPAWNS AND SPREADS? AND PLAYER SPREADS THAT GOES OVER MAX POWER?
     def turn(self, color: PlayerColor, action: Action, **referee: dict):
         """
         Update the agent with the last player's action.
@@ -143,7 +143,8 @@ class Agent:
                 self.board.totalPower += 1
                 self.board.spawn((cell.r, cell.q), c)
                 return
-                  
+            
+            ### NEED TO RE-CALCULATE POWER for any SPREADS?
             case SpreadAction(cell, direction):
                 print(f"Testing: {color} SPREAD from {cell}, {direction}")
                 self.board.spread((cell.r, cell.q), (direction.value.r, direction.value.q))
