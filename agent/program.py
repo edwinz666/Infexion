@@ -17,6 +17,7 @@ import random
 
 DIM = 7
 MAX_POWER = DIM-1
+MAX_BOARD_POW = 49
 
 ################################################################################
 ############################## Agent Class #####################################
@@ -91,7 +92,7 @@ class Agent:
         q = random.randint(0,6)
 
         dir = random.randint(0,5)
-        direction: HexDir
+        direction = HexDir.Up
         match dir:
             case 0:
                 direction = HexDir.Up
@@ -107,7 +108,7 @@ class Agent:
                 direction = HexDir.UpLeft
         
                 
-        if (r,q) not in self.board.internalBoard:
+        if (r,q) not in self.board.internalBoard and self.board.totalPower < MAX_BOARD_POW:
             return SpawnAction(HexPos(r, q))
         else:
             myBoard = {}
@@ -115,7 +116,9 @@ class Agent:
                 if self.board.internalBoard.get(piece)[0] == colour:
                     myBoard[piece] = self.board.internalBoard.get(piece)
             position = random.choice(list(myBoard.keys()))
-            return SpreadAction(position, direction)
+            print(myBoard)
+            #print(self.board.internalBoard)
+            return SpreadAction(HexPos(position[0], position[1]), direction)
                 
                    
 
@@ -131,12 +134,14 @@ class Agent:
                 c = 'r'
                 if (color == PlayerColor.BLUE):
                     c = 'b'
+                self.board.totalPower += 1
                 self.board.spawn((cell.r, cell.q), c)
                 return
                   
             case SpreadAction(cell, direction):
                 print(f"Testing: {color} SPREAD from {cell}, {direction}")
-                self.board.spread((cell.r, cell.q), (1, -1))
+                self.board.spread((cell.r, cell.q), (direction.value.r, direction.value.q))
+                print(render_board(self.board.internalBoard))
                 return
 
 ################################################################################
@@ -153,6 +158,7 @@ class InternalBoard:
         """
         Initialise the internal board.
         """
+        self.totalPower: int = 0
         self.internalBoard: dict[tuple, tuple] = {}
 
     def spawn(self, position: tuple, color):
