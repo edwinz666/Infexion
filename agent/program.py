@@ -85,6 +85,14 @@ class Agent:
         # 
         #   NOW have list of ALL moves and their evaluations ...
         #   pick the move with best evaluation and play
+        #
+        # try to pick the move that generates such that:
+        #   player nodes have more attackers than some enemy nodes defenders
+        #   and also player nodes have more defenders than enemy nodes attackers
+        #
+        # MAYBE instead if a player chooses a move:
+        #   each node goes to a certain player based on attackers vs defenders
+        #   
 
         # temperary random algorithm
         r = random.randint(0,6)
