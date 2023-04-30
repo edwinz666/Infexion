@@ -19,6 +19,57 @@ DIM = 7
 MAX_POWER = DIM-1
 MAX_BOARD_POW = 49
 
+DIRECTIONS = ((1,-1), (1,0), (0,1), (-1,1), (-1,0), (0,-1))
+ENEMY = {'r': 'b', 'b': 'r'}
+
+def generateCoveragePositionPower():
+    coveragePositionPower = {}
+
+    for i in range(DIM):
+        for j in range(DIM):
+            position = (i, j)
+            for power in range(1,4):
+                covered = []
+                for direction in DIRECTIONS:
+                
+                    """ Finds the destination of a node after a move in a direction """
+                
+
+                    tempPower = power
+                    tempR = position[0]
+                    tempQ = position[1]
+
+                    while tempPower:
+                        newR = tempR + direction[0]
+                        newQ = tempQ + direction[1]
+
+                        # require both r and q to be positive, and also less than the dimension
+                        if newR < 0:
+                            newR = DIM - 1
+                        elif newR >= DIM:
+                            newR = 0
+
+                        if newQ < 0:
+                            newQ = DIM - 1
+                        elif newQ >= DIM:
+                            newQ = 0 
+                        if (newR, newQ) not in covered:
+                            covered.append((newR, newQ))
+                    
+                        tempR = newR
+                        tempQ = newQ
+
+                        tempPower -= 1
+                
+                coveragePositionPower[(position, power)] = covered
+                if power == 3:
+                    for restPower in range(4, 7):
+                        coveragePositionPower[(position, restPower)] = covered
+    return coveragePositionPower
+
+coveragePositionPower = generateCoveragePositionPower()
+
+
 ################################################################################
 ############################## Agent Class #####################################
 ################################################################################
@@ -237,7 +288,73 @@ class InternalBoard:
     
     def getKeys(self):
         return self.internalBoard.keys()
-    
+
+# higher power favours red, lower power favours blue
+def evaluatePower(board):
+    totalPower = 0
+    for (colour, power) in board.values():
+        if colour == 'r':
+            totalPower += power
+        else:
+            totalPower -= power
+    return totalPower
+        
+def generateCoverageDict():
+    coverage = {}
+
+    for i in range(DIM):
+        for j in range(DIM):
+            coverage[(i,j)] = 0
+
+    return coverage
+
+# gives each node's power (or something else?) to a certain player based on
+# the node's colour and 
+def evaluateAtkDef(board, colourToMove):
+    # 1. generate two arrays 7x7 ? for both colours
+    # 2. go over every node, and add to covered squares in array based on colour
+    # 3. go over every node again, but compare array coverages based on colour
+    # 4.    for every node ... add power based on who wins
+    # 5. if colourToMove is RED ... remove blue's best capture if available
+
+    colourToMoveCoverage = generateCoverageDict()
+    colourJustPlayedCoverage = generateCoverageDict()
+
+    # MAYBE ONLY NEED LIST FOR colourJustPlayed ... to remove the best capture for that colour
+    colourToMoveScores = []
+    colourJustPlayedScores = []
+
+    for (position, (colour, power)) in board.items():
+        for covered in coveragePositionPower[(position, power)]:
+            if colour == colourToMove:
+                colourToMoveCoverage[covered] += 1
+            else:
+                colourJustPlayedCoverage[covered] += 1
+
+    for (position, (colour, power)) in board.items():
+        if colour == colourToMove:
+            if colourToMoveCoverage > colourJustPlayedCoverage:
+                colourToMoveScores.append(power)
+            else:
+                colourJustPlayedScores.append(power)
+        else:
+            if colourJustPlayedCoverage > colourToMoveCoverage:
+                colourJustPlayedScores.append(power)
+            else:
+                colourToMoveScores.append(power)
+
+    sortJustPlayedScores = sorted(colourJustPlayedScores,)
+    sortJustPlayedScores.pop()
+
+    evaluation = 0
+
+    if colourToMove == 'r':
+        return sum(colourToMoveScores) - sum(sortJustPlayedScores)
+    else:
+        return sum(sortJustPlayedScores) - sum(colourToMoveScores)
+
+
+
 ################################################################################
 ############################### End Program ####################################
 ################################################################################
