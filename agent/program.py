@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 from referee.game import \
     PlayerColor, Action, SpawnAction, SpreadAction, HexPos, HexDir
-from referee.utils import render_board
+from .utils import render_board
 
 import random
 
@@ -17,6 +17,7 @@ import random
 
 DIM = 7
 MAX_POWER = DIM-1
+MAX_BOARD_POW = 49
 
 ################################################################################
 ############################## Agent Class #####################################
@@ -97,17 +98,33 @@ class Agent:
         # temperary random algorithm
         r = random.randint(0,6)
         q = random.randint(0,6)
+
+        dir = random.randint(0,5)
+        direction = HexDir.Up
+        match dir:
+            case 0:
+                direction = HexDir.Up
+            case 1:
+                direction = HexDir.UpRight
+            case 2:
+                direction = HexDir.DownRight
+            case 3:
+                direction = HexDir.Down
+            case 4:
+                direction = HexDir.DownLeft
+            case 5:
+                direction = HexDir.UpLeft
         
                 
-        if (r,q) not in self.board.internalBoard:
+        if (r,q) not in self.board.internalBoard and self.board.totalPower < MAX_BOARD_POW:
             return SpawnAction(HexPos(r, q))
         else:
+            myBoard = {}
             for piece in self.board.internalBoard.keys():
                 if self.board.internalBoard.get(piece)[0] == colour:
-                    r = piece[0]
-                    q = piece[1]
-                    break
-            return SpreadAction(HexPos(r, q), HexDir.Up)
+                    myBoard[piece] = self.board.internalBoard.get(piece)
+            position = random.choice(list(myBoard.keys()))
+            return SpreadAction(HexPos(position[0], position[1]), direction)
                 
                    
 
@@ -123,17 +140,17 @@ class Agent:
                 c = 'r'
                 if (color == PlayerColor.BLUE):
                     c = 'b'
+                self.board.totalPower += 1
                 self.board.spawn((cell.r, cell.q), c)
                 return
                   
             case SpreadAction(cell, direction):
                 print(f"Testing: {color} SPREAD from {cell}, {direction}")
-                self.board.spread((cell.r, cell.q), (1, -1))
+                self.board.spread((cell.r, cell.q), (direction.value.r, direction.value.q))
                 return
 
-
 ################################################################################
-######################### Inetrnal Board Class #################################
+########################### Inetrnal Board Class ###############################
 ################################################################################
 
 @dataclass
@@ -146,6 +163,7 @@ class InternalBoard:
         """
         Initialise the internal board.
         """
+        self.totalPower: int = 0
         self.internalBoard: dict[tuple, tuple] = {}
 
     def spawn(self, position: tuple, color):
