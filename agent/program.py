@@ -324,6 +324,7 @@ def evaluateAtkDef(board, colourToMove):
     # 4.    for every node ... add power based on who wins
     # 5. if colourToMove is RED ... remove blue's best capture if available
 
+    # 1. 
     colourToMoveCoverage = generateCoverageDict()
     colourJustPlayedCoverage = generateCoverageDict()
 
@@ -331,13 +332,15 @@ def evaluateAtkDef(board, colourToMove):
     colourToMoveScores = []
     colourJustPlayedScores = []
 
+    # 2.
     for (position, (colour, power)) in board.items():
         for covered in coveragePositionPower[(position, power)]:
             if colour == colourToMove:
                 colourToMoveCoverage[covered] += 1
             else:
                 colourJustPlayedCoverage[covered] += 1
-
+    
+    # 3.
     for (position, (colour, power)) in board.items():
         if colour == colourToMove:
             if colourToMoveCoverage > colourJustPlayedCoverage:
@@ -349,11 +352,10 @@ def evaluateAtkDef(board, colourToMove):
                 colourJustPlayedScores.append(power)
             else:
                 colourToMoveScores.append(power)
-
-    sortJustPlayedScores = sorted(colourJustPlayedScores,)
+    
+    # 4.
+    sortJustPlayedScores = sorted(colourJustPlayedScores)
     sortJustPlayedScores.pop()
-
-    evaluation = 0
 
     if colourToMove == 'r':
         return sum(colourToMoveScores) - sum(sortJustPlayedScores)
