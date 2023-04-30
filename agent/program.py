@@ -49,17 +49,33 @@ class Agent:
         # temperary random algorithm
         r = random.randint(0,6)
         q = random.randint(0,6)
+
+        dir = random.randint(0,5)
+        direction: HexDir
+        match dir:
+            case 0:
+                direction = HexDir.Up
+            case 1:
+                direction = HexDir.UpRight
+            case 2:
+                direction = HexDir.DownRight
+            case 3:
+                direction = HexDir.Down
+            case 4:
+                direction = HexDir.DownLeft
+            case 5:
+                direction = HexDir.UpLeft
         
                 
         if (r,q) not in self.board.internalBoard:
             return SpawnAction(HexPos(r, q))
         else:
+            myBoard = {}
             for piece in self.board.internalBoard.keys():
                 if self.board.internalBoard.get(piece)[0] == colour:
-                    r = piece[0]
-                    q = piece[1]
-                    break
-            return SpreadAction(HexPos(r, q), HexDir.Up)
+                    myBoard[piece] = self.board.internalBoard.get(piece)
+            position = random.choice(list(myBoard.keys()))
+            return SpreadAction(position, direction)
                 
                    
 
@@ -83,9 +99,8 @@ class Agent:
                 self.board.spread((cell.r, cell.q), (1, -1))
                 return
 
-
 ################################################################################
-######################### Inetrnal Board Class #################################
+########################### Inetrnal Board Class ###############################
 ################################################################################
 
 @dataclass
