@@ -18,6 +18,7 @@ import random
 DIM = 7
 MAX_POWER = DIM-1
 MAX_BOARD_POW = 49
+MAX_TURNS = 343
 
 DIRECTIONS = ((1,-1), (1,0), (0,1), (-1,1), (-1,0), (0,-1))
 ENEMY = {'r': 'b', 'b': 'r'}
@@ -295,6 +296,26 @@ class InternalBoard:
     
     def getKeys(self):
         return self.internalBoard.keys()
+
+
+# could use game_over(board), in board.py
+def is_terminal(board):
+    # if maximum number of turns is reached
+    if(board.turns >= MAX_TURNS):
+        return True
+    
+    # else if no blue pieces left
+    elif(board.bluePieces == 0):
+        return True
+    
+    # else if no red pieces left
+    elif(board.redPieces == 0):
+        return True
+    
+    # else continue
+    return False
+    
+
 
 # higher power favours red, lower power favours blue
 def evaluatePower(board):
