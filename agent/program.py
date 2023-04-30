@@ -45,6 +45,46 @@ class Agent:
             colour = 'b'
         
         # algorithm goes here: 
+        # pseudocode ...
+        # MCTS(self.board, colour) ...
+        #   tree = Starting from the root of the tree, use a selection strategy
+        #          to choose successor states until we reach a leaf node of the tree
+        #   while IsTimeRemaining:
+        #       leaf = select(tree)
+        #       child = expand(leaf)
+        #       result = simulate(child)
+        #       backPropogate(result, child)
+        #       return the move in actions(state) whose node has the highest number of playouts
+
+        ############## ALGORITHM STRATEGY ###########################
+        # general strategy for making a move:
+        # consider all moves: spreads from a node, and spawns of player colour
+        # each move, consider territories occupied by each player after all possible captures can be mode ...
+        # each move played should have something stored somewhere as (movePlayed, territoryEvaluation)
+        # check for winning positions too?
+
+        # We will check all SPREAD actions first ... 
+        # for each SPREAD action possible in position:
+        #   if capture made by that SPREAD action: (define function to check for captures)?
+        #       do MINIMAX recursion, but ONLY capture moves by both players moving forward in this MINIMAX algorithm
+        #       --> this will result in a final board position after captures --> return the territory evaluation for this board
+        #      (root node of the minimax will be the board after the player makes a move, AKA opponent's move)
+        #      (that root node recursively expands into all boards THAT INVOLVE A CAPTURE etc based on whose turn it is)
+        #      (we only consider territories after captures have ended)
+        #   if no capture made by that SPREAD action:
+        #       --> simply return the territory evaluation
+        #
+        # After checking all SPREAD actions ... do we consider SPAWN actions?
+        # if the best territory evaluation after considering all SPREAD moves is better than original evaluation:
+        #     SKIP checking spawn actions? (is it possible to have a better spawn move if a 
+        #                                   spread move results in an improvement of territory?)
+        #      --> just return and play the best spread move we found then?
+        # otherwise (AKA SPREAD moves don't improve our position, then we consider SPAWN moves):
+        #   for each SPAWN action possible in position:
+        #       get evaluations for the SPAWN action
+        # 
+        #   NOW have list of ALL moves and their evaluations ...
+        #   pick the move with best evaluation and play
 
         # temperary random algorithm
         r = random.randint(0,6)

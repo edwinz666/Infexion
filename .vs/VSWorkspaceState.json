@@ -1,7 +1,12 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\.idea",
+    "\\agent",
+    "\\referee",
+    "\\referee\\agent",
+    "\\referee\\game"
   ],
-  "SelectedNode": "\\C:\\Users\\61468\\OneDrive\\Desktop\\Artificial Intelligence\\AI_Project_B",
+  "SelectedNode": "\\agent\\program.py",
   "PreviewInSolutionExplorer": false
 }
