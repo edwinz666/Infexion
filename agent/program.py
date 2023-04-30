@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 from referee.game import \
     PlayerColor, Action, SpawnAction, SpreadAction, HexPos, HexDir
-from referee.utils import render_board
+from .utils import render_board
 
 import random
 
@@ -116,8 +116,6 @@ class Agent:
                 if self.board.internalBoard.get(piece)[0] == colour:
                     myBoard[piece] = self.board.internalBoard.get(piece)
             position = random.choice(list(myBoard.keys()))
-            print(myBoard)
-            #print(self.board.internalBoard)
             return SpreadAction(HexPos(position[0], position[1]), direction)
                 
                    
@@ -141,7 +139,6 @@ class Agent:
             case SpreadAction(cell, direction):
                 print(f"Testing: {color} SPREAD from {cell}, {direction}")
                 self.board.spread((cell.r, cell.q), (direction.value.r, direction.value.q))
-                print(render_board(self.board.internalBoard))
                 return
 
 ################################################################################
