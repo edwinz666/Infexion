@@ -157,9 +157,9 @@ class Agent:
         r = random.randint(0,6)
         q = random.randint(0,6)
 
-        dir = random.randint(0,5)
-        direction = HexDir.Up
-        match dir:
+        # dir already taken by Python ? 
+        direction = None
+        match random.randint(0,5):
             case 0:
                 direction = HexDir.Up
             case 1:
