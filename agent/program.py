@@ -94,6 +94,13 @@ class Agent:
         # MAYBE instead if a player chooses a move:
         #   each node goes to a certain player based on attackers vs defenders
         #   
+        
+        
+
+        ######## calling minimax algorithm for next move ########
+        # next_move = self.minimax.next_move(self.current_state)
+        
+
 
         # temperary random algorithm
         r = random.randint(0,6)
