@@ -1,6 +1,7 @@
 import math
 from referee.game import board
 
+
 class minimax:
     
     def __init__(self):
@@ -16,9 +17,9 @@ class minimax:
     
     # depth: the depth of the search
     
-    def max_value(state, game, alpha, beta):
-        if game.is_terminal(state):
-            return game.evaluate(state)
+    def max_value(state: dict[tuple, tuple], alpha, beta):
+        if is_terminal(state):
+            return evaluate(state)
         
         v = -math.inf
         
