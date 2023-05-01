@@ -225,6 +225,9 @@ class InternalBoard:
         """
         self.totalPower: int = 0
         self.internalBoard: dict[tuple, tuple] = {}
+        self.bluePieces: int = 0
+        self.redPieces: int = 0
+
 
     def spawn(self, position: tuple, color):
             """ Spawns a piece (its position) on the board """
@@ -232,9 +235,16 @@ class InternalBoard:
             if position in self.internalBoard.keys():
                 return False
             else:
-                self.internalBoard[position] = (color, 1)
                 return True
-        
+    
+    def countPieces(self, color: str):
+        """ Counts the number of pieces on the board for a given color """
+        count = 0
+        for piece in self.internalBoard.keys():
+            if self.internalBoard.get(piece)[0] == color:
+                count += 1
+        return count
+
     '''helper functions for spreading a thingo'''
     def spread(self, piece: tuple, direction: tuple):
         """ Spreads a piece (its position) in a direction on the board """
@@ -304,12 +314,8 @@ def is_terminal(board):
     if(board.turns >= MAX_TURNS):
         return True
     
-    # else if no blue pieces left
-    elif(board.bluePieces == 0):
-        return True
-    
-    # else if no red pieces left
-    elif(board.redPieces == 0):
+    # else if no blue or red pieces left
+    elif(board.countPieces('b') == 0 or board.countPieces('r') == 0):
         return True
     
     # else continue
