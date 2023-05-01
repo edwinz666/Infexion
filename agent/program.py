@@ -330,12 +330,18 @@ def get_successors(state, colourToMove):
     # when you land on a piece perform a spread in 6 directions
     # if it is empty spawn a piece
     # add to the successors list
-    for (position, (colour, power)) in state.keys():
-        if colour == colourToMove:
-            for direction in HexDir:
-                successors.append(state.spread(position, direction))
-        elif len(colour) == 0:
-            successors.append(state.spawn(position, colourToMove))
+    for r in range(DIM):
+        for q in range(DIM):
+            position = (r, q)
+        
+            if position in state.keys():
+                if(state.get(position)[0] == colourToMove):
+                    # spread in all directions
+                    for direction in HexDir:
+                        successors.append(state.spread(position, direction))
+                
+            else:
+                successors.append(state.spawn(position, colourToMove))
     
     return successors
 
