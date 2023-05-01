@@ -174,7 +174,7 @@ class Agent:
             case 5:
                 direction = HexDir.UpLeft
         
-                
+        print(render_board(self.board.internalBoard))        
         if (r,q) not in self.board.internalBoard and self.board.totalPower < MAX_BOARD_POW:
             return SpawnAction(HexPos(r, q))
         else:
@@ -235,6 +235,7 @@ class InternalBoard:
             if position in self.internalBoard.keys():
                 return False
             else:
+                self.internalBoard[position] = (color, 1)
                 return True
     
     def countPieces(self, color: str):
