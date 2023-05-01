@@ -348,7 +348,7 @@ def get_successors(board: InternalBoard, colourToMove):
     
     for position in state.keys():
         if(state.get(position)[0] == colourToMove):
-            print(state.get(position)[0])
+            # print(state.get(position)[0])
             # spread in all directions
             for direction in DIRECTIONS:
                 temp.spread(position, direction)
@@ -361,7 +361,8 @@ def get_successors(board: InternalBoard, colourToMove):
         q = random.randint(0,6)
         
         temp.spawn((r, q), colourToMove)
-        
+        successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
+        temp = copy.deepcopy(board)
 
 
     return successors
@@ -517,9 +518,16 @@ class minimax:
         next_move = None
         
         for s in get_successors(self.board, colour):
+            print("successor : ", s)
             score = self.min_value(s[0], alpha, beta, colour)
             if score > best_score:
                 best_score = score
                 next_move = s
-            alpha = max(alpha, best_score)    
+            alpha = max(alpha, best_score) 
+        
+        if next_move is None:
+            print("well you lost")
+            return None
+        
+        print(next_move[1])   
         return next_move[1]
