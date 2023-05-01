@@ -150,7 +150,7 @@ class Agent:
         
 
         ######## calling minimax algorithm for next move ########
-        # next_move = self.minimax.next_move(self.current_state)
+        next_move = self.minimax.next_move(self.current_state)
         
 
 

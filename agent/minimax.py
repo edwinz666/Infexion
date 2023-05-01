@@ -6,7 +6,7 @@ from referee.game import board
 class minimax:
     
     def __init__(self):
-        self.game = board
+        self.state = board
         
         
     # minimax implementation
