@@ -1,4 +1,5 @@
 import math
+from agent.program import evaluatePower, get_successors, is_terminal
 from referee.game import board
 
 
@@ -19,11 +20,11 @@ class minimax:
     
     def max_value(state: dict[tuple, tuple], alpha, beta):
         if is_terminal(state):
-            return evaluate(state)
+            return evaluatePower(state) # evaluateAtkDef(state)
         
         v = -math.inf
         
-        for s in game.actions(state):
+        for s in get_successors(state):
             v = max(v, minimax.min_value(s, alpha, beta))
             alpha = max(alpha, v)
             if alpha >= beta:
@@ -33,11 +34,11 @@ class minimax:
     
     def min_value(state, game, alpha, beta):
         if game.is_terminal(state):
-            return game.evaluate(state)
+            return evaluatePower(state) # evaluateAtkDef(state)
         
         v = math.inf
         
-        for s in game.actions(state):
+        for s in get_successors(state):
             v = min(v, minimax.max_value(game.result(s, alpha, beta)))
             if v <= alpha:
                 return v
