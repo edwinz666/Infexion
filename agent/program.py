@@ -155,6 +155,7 @@ class Agent:
 
 
         # temperary random algorithm
+        '''
         r = random.randint(0,6)
         q = random.randint(0,6)
 
@@ -184,6 +185,7 @@ class Agent:
                     myBoard[piece] = self.board.internalBoard.get(piece)
             position = random.choice(list(myBoard.keys()))
             return SpreadAction(HexPos(position[0], position[1]), direction)
+        '''
                 
                    
     ### DOES IT ACCOUNT FOR OPPONENT"S SPAWNS AND SPREADS? AND PLAYER SPREADS THAT GOES OVER MAX POWER?
