@@ -321,7 +321,23 @@ def is_terminal(board):
     # else continue
     return False
     
-
+    
+# get the successors, possible states we should explore
+def get_successors(state, colourToMove):
+    successors = []
+    
+    # loop through the board and find all player's piece
+    # when you land on a piece perform a spread in 6 directions
+    # if it is empty spawn a piece
+    # add to the successors list
+    for (position, (colour, power)) in state.items():
+        if colour == colourToMove:
+            for direction in HexDir:
+                successors.append(state.spread(position, direction))
+        elif colour == 'e':
+            successors.append(state.spawn(position, colourToMove))
+    
+    return successors
 
 # higher power favours red, lower power favours blue
 def evaluatePower(board):
