@@ -1,6 +1,7 @@
 # COMP30024 Artificial Intelligence, Semester 1 2023
 # Project Part B: Game Playing Agent
 
+import copy
 from dataclasses import dataclass
 from referee.game import \
     PlayerColor, Action, SpawnAction, SpreadAction, HexPos, HexDir
@@ -336,33 +337,60 @@ class InternalBoard:
 # get the successors, possible states we should explore
 def get_successors(board: InternalBoard, colourToMove):
     successors = []
-    temp = board
-    state = board.internalBoard
-    
+    state = copy.deepcopy(board.internalBoard)
+    temp = copy.deepcopy(board)
+
     
     # loop through the board and find all player's piece
     # when you land on a piece perform a spread in 6 directions
     # if it is empty spawn a piece
     # add to the successors list
-    print(state)
+    
+    for position in state.keys():
+        if(state.get(position)[0] == colourToMove):
+            print(state.get(position)[0])
+            # spread in all directions
+            for direction in DIRECTIONS:
+                temp.spread(position, direction)
+                successors.append((temp.internalBoard, ('spread', position, direction)))
+                temp = copy.deepcopy(board) # reset temp to original state
+
+    # random spawn if can't spread
+    if len(successors) == 0:
+        r = random.randint(0,6)
+        q = random.randint(0,6)
+        
+        temp.spawn((r, q), colourToMove)
+        
+
+
+    return successors
+
+""""
+
     for r in range(DIM):
         for q in range(DIM):
             position = (r, q)
         
             if position in state.keys():
                 if(state.get(position)[0] == colourToMove):
+                    print(state.get(position)[0])
                     # spread in all directions
                     for direction in DIRECTIONS:
+                        temp = copy.deepcopy(board)
                         temp.spread(position, direction)
                         successors.append((temp.internalBoard, ('spread', position, direction)))
-                        temp = board # reset temp to original state
+                        temp = copy.deepcopy(board) # reset temp to original state
 
             else:
+                temp = copy.deepcopy(board)
                 temp.spawn(position, colourToMove)
                 successors.append((temp.internalBoard, ('spawn', position, colourToMove)))
-                temp = board # reset temp to original state
-    
+                temp = copy.deepcopy(board) # reset temp to original state
     return successors
+    
+"""
+
 
 # higher power favours red, lower power favours blue
 def evaluatePower(board: dict[tuple, tuple]):
@@ -457,7 +485,6 @@ class minimax:
             return evaluatePower(state) # evaluateAtkDef(state)
         
         v = -math.inf
-        
         for s in get_successors(self.board, colour):
             v = max(v, self.min_value(s[0], alpha, beta, colour))
             alpha = max(alpha, v)
