@@ -100,58 +100,6 @@ class Agent:
             colour = 'r'
         else:
             colour = 'b'
-        
-        # algorithm goes here: 
-        # pseudocode ...
-        # MCTS(self.board, colour) ...
-        #   tree = Starting from the root of the tree, use a selection strategy
-        #          to choose successor states until we reach a leaf node of the tree
-        #   while IsTimeRemaining:
-        #       leaf = select(tree)
-        #       child = expand(leaf)
-        #       result = simulate(child)
-        #       backPropogate(result, child)
-        #       return the move in actions(state) whose node has the highest number of playouts
-
-        ############## ALGORITHM STRATEGY ###########################
-        # general strategy for making a move:
-        # consider all moves: spreads from a node, and spawns of player colour
-        # each move, consider territories occupied by each player after all possible captures can be mode ...
-        # each move played should have something stored somewhere as (movePlayed, territoryEvaluation)
-        # check for winning positions too?
-
-        # We will check all SPREAD actions first ... 
-        # for each SPREAD action possible in position:
-        #   if capture made by that SPREAD action: (define function to check for captures)?
-        #       do MINIMAX recursion, but ONLY capture moves by both players moving forward in this MINIMAX algorithm
-        #       --> this will result in a final board position after captures --> return the territory evaluation for this board
-        #      (root node of the minimax will be the board after the player makes a move, AKA opponent's move)
-        #      (that root node recursively expands into all boards THAT INVOLVE A CAPTURE etc based on whose turn it is)
-        #      (we only consider territories after captures have ended)
-        #   if no capture made by that SPREAD action:
-        #       --> simply return the territory evaluation
-        #
-        # After checking all SPREAD actions ... do we consider SPAWN actions?
-        # if the best territory evaluation after considering all SPREAD moves is better than original evaluation:
-        #     SKIP checking spawn actions? (is it possible to have a better spawn move if a 
-        #                                   spread move results in an improvement of territory?)
-        #      --> just return and play the best spread move we found then?
-        # otherwise (AKA SPREAD moves don't improve our position, then we consider SPAWN moves):
-        #   for each SPAWN action possible in position:
-        #       get evaluations for the SPAWN action
-        # 
-        #   NOW have list of ALL moves and their evaluations ...
-        #   pick the move with best evaluation and play
-        #
-        # try to pick the move that generates such that:
-        #   player nodes have more attackers than some enemy nodes defenders
-        #   and also player nodes have more defenders than enemy nodes attackers
-        #
-        # MAYBE instead if a player chooses a move:
-        #   each node goes to a certain player based on attackers vs defenders
-        #   
-        
-        
 
         ######## calling minimax algorithm for next move ########
         next_move = self.Minimax.next_move(self.board, colour)
@@ -220,7 +168,7 @@ class Agent:
                 return
 
 ################################################################################
-########################### Inetrnal Board Class ###############################
+########################### Ineternal Board Class ###############################
 ################################################################################
 
 @dataclass
@@ -339,7 +287,6 @@ def get_successors(board: InternalBoard, colourToMove):
     successors = []
     state = copy.deepcopy(board)
     temp = copy.deepcopy(board)
-
     
     # loop through the board and find all player's piece
     # when you land on a piece perform a spread in 6 directions
@@ -358,7 +305,7 @@ def get_successors(board: InternalBoard, colourToMove):
                 temp = copy.deepcopy(board) # reset temp to original state
 
     # random spawn
-    for i in range(4):
+    for i in range(3):
         r = random.randint(0,6)
         q = random.randint(0,6)
         
