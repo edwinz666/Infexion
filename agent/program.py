@@ -478,23 +478,38 @@ class minimax:
             
         return v
     
+    # colour should affect this algorithm
     def next_move(self, board: InternalBoard, colour):
         self.board = board
         # self.state = board.internalBoard
         
-        best_score = -math.inf
+        #best_score = -math.inf
         alpha = -math.inf
         beta = math.inf
         next_move = None
         
-        for s in get_successors(self.board, colour):
-            print("successor : ", s)
+        if colour == 'r':
+            best_score = -math.inf
+            for s in get_successors(self.board, colour):
+                print("successor : ", s)
             
-            score = self.min_value(s[0], alpha, beta, colour, 3)
-            if score > best_score:
-                best_score = score
-                next_move = s
-            alpha = max(alpha, best_score) 
+                score = self.min_value(s[0], alpha, beta, colour, 3)
+                if score > best_score:
+                    best_score = score
+                    next_move = s
+                alpha = max(alpha, best_score)
+        
+        else:
+            best_score = math.inf
+            for s in get_successors(self.board, colour):
+                print("successor : ", s)
+            
+                score = self.max_value(s[0], alpha, beta, colour, 3)
+                if score < best_score:
+                    best_score = score
+                    next_move = s
+                beta = min(beta, best_score)
+        
         
         if next_move is None:
             print("well you lost")
