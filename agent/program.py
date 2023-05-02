@@ -488,7 +488,7 @@ class minimax:
         
         # if this_state.is_terminal():
         if depth == 0 or self.board.is_terminal():
-            return evaluatePower(state) # evaluateAtkDef(state)
+            return evaluatePower(state) # evaluateAtkDef(state, colour) # 
         
         v = -math.inf
         
@@ -512,7 +512,7 @@ class minimax:
         
         # if this_state.is_terminal():
         if depth == 0 or self.board.is_terminal():
-            return evaluatePower(state) # evaluateAtkDef(state)
+            return evaluatePower(state) # evaluateAtkDef(state, colour) # 
         
         v = math.inf
         
