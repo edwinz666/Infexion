@@ -358,7 +358,7 @@ def get_successors(board: InternalBoard, colourToMove):
                 temp = copy.deepcopy(board) # reset temp to original state
 
     # random spawn
-    for i in range(3):
+    for i in range(4):
         r = random.randint(0,6)
         q = random.randint(0,6)
         
