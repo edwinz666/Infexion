@@ -440,12 +440,12 @@ def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
     # 3.
     for (position, (colour, power)) in board.items():
         if colour == colourToMove:
-            if colourToMoveCoverage > colourJustPlayedCoverage:
+            if colourToMoveCoverage[position] > colourJustPlayedCoverage[position]:
                 colourToMoveScores.append(power)
             else:
                 colourJustPlayedScores.append(power)
         else:
-            if colourJustPlayedCoverage > colourToMoveCoverage:
+            if colourJustPlayedCoverage[position] > colourToMoveCoverage[position]:
                 colourJustPlayedScores.append(power)
             else:
                 colourToMoveScores.append(power)
