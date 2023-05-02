@@ -493,7 +493,7 @@ class minimax:
             for s in get_successors(self.board, colour):
                 print("successor : ", s)
             
-                score = self.min_value(s[0], alpha, beta, colour, 3)
+                score = self.min_value(s[0], alpha, beta, colour, 2)
                 if score > best_score:
                     best_score = score
                     next_move = s
@@ -504,7 +504,7 @@ class minimax:
             for s in get_successors(self.board, colour):
                 print("successor : ", s)
             
-                score = self.max_value(s[0], alpha, beta, colour, 3)
+                score = self.max_value(s[0], alpha, beta, colour, 2)
                 if score < best_score:
                     best_score = score
                     next_move = s
