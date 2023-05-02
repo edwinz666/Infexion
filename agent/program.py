@@ -346,7 +346,7 @@ def get_successors(board: InternalBoard, colourToMove):
     # if it is empty spawn a piece
     # add to the successors list
     
-    """
+    
     for position in state.internalBoard.keys():
         if(state.internalBoard.get(position)[0] == colourToMove):
         # if(state.get(position)[0] == colourToMove):
@@ -357,14 +357,16 @@ def get_successors(board: InternalBoard, colourToMove):
                 successors.append((temp.internalBoard, ('spread', position, direction)))
                 temp = copy.deepcopy(board) # reset temp to original state
 
-    # random spawn if can't spread
-    if len(successors) == 0:
+    # random spawn
+    for i in range(4):
         r = random.randint(0,6)
         q = random.randint(0,6)
         
-        temp.spawn((r, q), colourToMove)
-        successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
-        temp = copy.deepcopy(board)
+        if((r, q) not in state.internalBoard.keys()):
+            temp.spawn((r, q), colourToMove)
+            successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
+            temp = copy.deepcopy(board)
+    
 
 
     return successors
@@ -391,7 +393,7 @@ def get_successors(board: InternalBoard, colourToMove):
     
     return successors
     
-
+    """
 
 # higher power favours red, lower power favours blue
 def evaluatePower(board: dict[tuple, tuple]):
@@ -493,7 +495,7 @@ class minimax:
             
         # if this_state.is_terminal():
         if depth == 0 or self.board.is_terminal():
-            return evaluateAtkDef(state, new_colour) # evaluatePower(state) # 
+            return evaluatePower(state) # evaluateAtkDef(state, new_colour) # 
         
         v = -math.inf
            
@@ -517,7 +519,7 @@ class minimax:
             
         # if this_state.is_terminal():
         if depth == 0 or self.board.is_terminal():
-            return evaluateAtkDef(state, colour) # evaluatePower(state) # 
+            return evaluatePower(state) # evaluateAtkDef(state, colour) # 
         
         v = math.inf
                 
