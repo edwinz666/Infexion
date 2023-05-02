@@ -1,7 +1,8 @@
 #import math
 #from .program import InternalBoard
 
-'''
+"""
+
 class minimax:
     
     def __init__(self, board: InternalBoard):
@@ -59,4 +60,4 @@ class minimax:
                 next_move = s
             alpha = max(alpha, best_score)    
         return next_move[1]
-        '''
+"""
