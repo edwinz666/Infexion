@@ -3,6 +3,7 @@
 
 import copy
 from dataclasses import dataclass
+from json.encoder import INFINITY
 from referee.game import \
     PlayerColor, Action, SpawnAction, SpreadAction, HexPos, HexDir
 from .utils import render_board
@@ -165,6 +166,7 @@ class Agent:
             case SpreadAction(cell, direction):
                 print(f"Testing: {color} SPREAD from {cell}, {direction}")
                 self.board.spread((cell.r, cell.q), (direction.value.r, direction.value.q))
+                self.board.totalPower = getTotalPower(self.board)
                 return
 
 ################################################################################
@@ -305,6 +307,9 @@ def get_successors(board: InternalBoard, colourToMove):
                 temp = copy.deepcopy(board) # reset temp to original state
 
     # random spawn
+    # 
+    coverages = getCoverages(board.internalBoard) 
+
     for i in range(3):
         r = random.randint(0,6)
         q = random.randint(0,6)
@@ -314,8 +319,8 @@ def get_successors(board: InternalBoard, colourToMove):
             successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
             temp = copy.deepcopy(board)
     
-
-
+    
+    
     return successors
 
     """
@@ -351,7 +356,13 @@ def evaluatePower(board: dict[tuple, tuple]):
         else:
             totalPower -= v[1]
     return totalPower
-        
+
+def getTotalPower(board):
+    power = 0
+    for (_, (_, k)) in board.items():
+        power += k
+    return power
+
 def generateCoverageDict():
     coverage = {}
 
@@ -408,7 +419,19 @@ def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
     else:
         return sum(sortJustPlayedScores) - sum(colourToMoveScores)
 
+def getCoverages(board):
+    redCoverage = generateCoverageDict()
+    blueCoverage = generateCoverageDict()
 
+    # 2.
+    for (position, (colour, power)) in board.items():
+        for covered in coveragePositionPower[(position, power)]:
+            if colour == 'r':
+                redCoverage[covered] += 1
+            else:
+                blueCoverage[covered] += 1
+
+    return (redCoverage,blueCoverage)
 
 ################################################################################
 ############################### End Program ####################################
@@ -442,7 +465,7 @@ class minimax:
             
         # if this_state.is_terminal():
         if depth == 0 or self.board.is_terminal():
-            return evaluatePower(state) # evaluateAtkDef(state, new_colour) # 
+            return evaluateAtkDef(state, new_colour) # evaluatePower(state) # 
         
         v = -math.inf
            
@@ -464,9 +487,21 @@ class minimax:
         else: 
             new_colour = 'r'
             
-        # if this_state.is_terminal():
-        if depth == 0 or self.board.is_terminal():
+        # if this_state.is_terminal():  
+        # ----> TERMINAL STATES NEEDS TO RETURN EVALUATION INFINITY OR NEGATIVE INFINITY
+        # E.g. if there is no BLUE pieces --> Red wins. therefore infinity evaluation
+        #      if there is no RED pieces --> Blue wins, therefore negative infinity evaluation
+        # is_terminal() whether no blue or no red pieces remains, and assign the above evaluations accordingly,
+        # rather than considering whether either no blue or red pieces
+        if self.board.is_terminal():
+            ### if no red pieces:
+                return INFINITY
+            ### if no blue pieces:
+                return NEGATIVE INFINITY
+
+        if depth == 0:
             return evaluatePower(state) # evaluateAtkDef(state, colour) # 
+
         
         v = math.inf
                 
