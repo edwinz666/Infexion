@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "myai",
+            "type": "python",
+            "request": "launch",
+            "module": "referee",
+            // "program": "${/Users/anastasiya/Documents/Unimelb/Artificial Intelligence/python_project/AI_PROJECTB}/referee.py",
+            "args": ["agent", "agent"],
+            //"console": "integratedTerminal"
+        }
+    ]
+}
