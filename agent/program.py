@@ -337,7 +337,7 @@ class InternalBoard:
 # get the successors, possible states we should explore
 def get_successors(board: InternalBoard, colourToMove):
     successors = []
-    state = copy.deepcopy(board.internalBoard)
+    state = copy.deepcopy(board)
     temp = copy.deepcopy(board)
 
     
@@ -346,8 +346,10 @@ def get_successors(board: InternalBoard, colourToMove):
     # if it is empty spawn a piece
     # add to the successors list
     
-    for position in state.keys():
-        if(state.get(position)[0] == colourToMove):
+    """
+    for position in state.internalBoard.keys():
+        if(state.internalBoard.get(position)[0] == colourToMove):
+        # if(state.get(position)[0] == colourToMove):
             # print(state.get(position)[0])
             # spread in all directions
             for direction in DIRECTIONS:
@@ -367,30 +369,28 @@ def get_successors(board: InternalBoard, colourToMove):
 
     return successors
 
-""""
+    """
 
     for r in range(DIM):
         for q in range(DIM):
             position = (r, q)
         
-            if position in state.keys():
-                if(state.get(position)[0] == colourToMove):
-                    print(state.get(position)[0])
+            if position in state.internalBoard.keys():
+                if(state.internalBoard.get(position)[0] == colourToMove):
+                    # print(state.get(position)[0])
                     # spread in all directions
                     for direction in DIRECTIONS:
-                        temp = copy.deepcopy(board)
                         temp.spread(position, direction)
                         successors.append((temp.internalBoard, ('spread', position, direction)))
                         temp = copy.deepcopy(board) # reset temp to original state
 
             else:
-                temp = copy.deepcopy(board)
                 temp.spawn(position, colourToMove)
                 successors.append((temp.internalBoard, ('spawn', position, colourToMove)))
                 temp = copy.deepcopy(board) # reset temp to original state
+    
     return successors
     
-"""
 
 
 # higher power favours red, lower power favours blue
@@ -481,27 +481,48 @@ class minimax:
     
     # depth: the depth of the search
     
-    def max_value(self, state: dict[tuple, tuple], alpha, beta, colour):
-        if self.board.is_terminal():
+    def max_value(self, state: dict[tuple, tuple], alpha, beta, colour, depth):
+        
+        this_state = InternalBoard()
+        this_state.internalBoard = copy.deepcopy(state)
+        
+        # if this_state.is_terminal():
+        if depth == 0 or self.board.is_terminal():
             return evaluatePower(state) # evaluateAtkDef(state)
         
         v = -math.inf
-        for s in get_successors(self.board, colour):
-            v = max(v, self.min_value(s[0], alpha, beta, colour))
+        
+        if(colour == 'r'):
+            new_colour = 'b'
+        else: 
+            new_colour = 'r'
+           
+        for s in get_successors(this_state, new_colour):
+            v = max(v, self.min_value(s[0], alpha, beta, new_colour, depth - 1))
             alpha = max(alpha, v)
             if alpha >= beta:
                 return beta
             
         return v
     
-    def min_value(self, state: dict[tuple, tuple], alpha, beta, colour):
-        if self.board.is_terminal():
+    def min_value(self, state: dict[tuple, tuple], alpha, beta, colour, depth):
+        
+        this_state = InternalBoard()
+        this_state.internalBoard = copy.deepcopy(state)
+        
+        # if this_state.is_terminal():
+        if depth == 0 or self.board.is_terminal():
             return evaluatePower(state) # evaluateAtkDef(state)
         
         v = math.inf
         
-        for s in get_successors(self.board, colour):
-            v = min(v, self.max_value(s[0], alpha, beta, colour))
+        if(colour == 'r'):
+            new_colour = 'b'
+        else: 
+            new_colour = 'r'
+                
+        for s in get_successors(this_state, new_colour):
+            v = min(v, self.max_value(s[0], alpha, beta, new_colour, depth - 1))
             if v <= alpha:
                 return v
             beta = min(beta, v)
@@ -510,7 +531,7 @@ class minimax:
     
     def next_move(self, board: InternalBoard, colour):
         self.board = board
-        self.state = board.internalBoard
+        # self.state = board.internalBoard
         
         best_score = -math.inf
         alpha = -math.inf
@@ -519,7 +540,8 @@ class minimax:
         
         for s in get_successors(self.board, colour):
             print("successor : ", s)
-            score = self.min_value(s[0], alpha, beta, colour)
+            
+            score = self.min_value(s[0], alpha, beta, colour, 3)
             if score > best_score:
                 best_score = score
                 next_move = s
