@@ -486,18 +486,18 @@ class minimax:
         this_state = InternalBoard()
         this_state.internalBoard = copy.deepcopy(state)
         
-        # if this_state.is_terminal():
-        if depth == 0 or self.board.is_terminal():
-            return evaluatePower(state) # evaluateAtkDef(state, colour) # 
-        
-        v = -math.inf
-        
         if(colour == 'r'):
             new_colour = 'b'
         else: 
             new_colour = 'r'
+            
+        # if this_state.is_terminal():
+        if depth == 0 or self.board.is_terminal():
+            return evaluateAtkDef(state, new_colour) # evaluatePower(state) # 
+        
+        v = -math.inf
            
-        for s in get_successors(this_state, new_colour):
+        for s in get_successors(this_state, colour):
             v = max(v, self.min_value(s[0], alpha, beta, new_colour, depth - 1))
             alpha = max(alpha, v)
             if alpha >= beta:
@@ -510,16 +510,16 @@ class minimax:
         this_state = InternalBoard()
         this_state.internalBoard = copy.deepcopy(state)
         
-        # if this_state.is_terminal():
-        if depth == 0 or self.board.is_terminal():
-            return evaluatePower(state) # evaluateAtkDef(state, colour) # 
-        
-        v = math.inf
-        
         if(colour == 'r'):
             new_colour = 'b'
         else: 
             new_colour = 'r'
+            
+        # if this_state.is_terminal():
+        if depth == 0 or self.board.is_terminal():
+            return evaluateAtkDef(state, colour) # evaluatePower(state) # 
+        
+        v = math.inf
                 
         for s in get_successors(this_state, new_colour):
             v = min(v, self.max_value(s[0], alpha, beta, new_colour, depth - 1))
