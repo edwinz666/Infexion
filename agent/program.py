@@ -404,7 +404,7 @@ def evaluatePower(board: dict[tuple, tuple]):
 
 def getTotalPower(board):
     power = 0
-    for (_, (_, k)) in board.items():
+    for (_, (_, k)) in board.internalBoard.items():
         power += k
     return power
 
