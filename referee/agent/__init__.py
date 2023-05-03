@@ -11,7 +11,7 @@ from .client import RemoteProcessClassClient, AsyncProcessStatus, \
     WrappedProcessException
 from .resources import ResourceLimitException
 
-RECV_TIMEOUT = 6000000 # Max seconds for reply from agent (wall clock time)
+RECV_TIMEOUT = 60000000 # Max seconds for reply from agent (wall clock time)
 
 # Provide a wrapper for Agent classes to handle tedious details like timing,
 # measuring space usage, reporting which method is currently being executed,
