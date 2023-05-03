@@ -189,6 +189,14 @@ def generateCoveragePositionPower():
                     tempQ = position[1]
 
                     while tempPower:
+                        
+                        
+                        # get new coordinates using modulus, returns remainder
+                        """ 
+                        # newR = ( tempR + direction[0] ) % DIM
+                        # newQ = ( tempQ + direction[1] ) % DIM
+                        """
+                        
                         newR = tempR + direction[0]
                         newQ = tempQ + direction[1]
 
