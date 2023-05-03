@@ -121,7 +121,7 @@ class Agent:
             case SpreadAction(cell, direction):
                 print(f"Testing: {color} SPREAD from {cell}, {direction}")
                 self.board.spread((cell.r, cell.q), (direction.value.r, direction.value.q))
-                self.board.totalPower = getTotalPower(self.board)
+                self.board.totalPower = getTotalPower(self.board.internalBoard)
                 return
             
 ################################################################################
