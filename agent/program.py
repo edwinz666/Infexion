@@ -329,7 +329,7 @@ def get_successors(board: InternalBoard, colourToMove):
                 temp.spread(position, direction)
 
                 # doesnt account for a 1 capturing a 6 currently
-                if temp.countPieces(colourToMove) <= board.countPieces(colourToMove):
+                if temp.countPieces(colourToMove) < board.countPieces(colourToMove):
                     temp = copy.deepcopy(board)
                     continue
 
@@ -517,10 +517,10 @@ class minimax:
             elif self.board.countPieces('b') == 0:
                 print("no blue pieces")
                 return math.inf
-        elif self.board.turn >= MAX_TURNS:
+        if self.board.turn >= MAX_TURNS:
                 return 0
 
-        elif depth == 0:
+        if depth == 0:
             return evaluateAtkDef(state, new_colour) # evaluatePower(state) # 
         
         v = -math.inf
@@ -561,10 +561,10 @@ class minimax:
             elif self.board.countPieces('b') == 0:
                 print("no blue pieces")
                 return math.inf
-        elif self.board.turn >= MAX_TURNS:
-                return 0
+        if self.board.turn >= MAX_TURNS:
+            return 0
 
-        elif depth == 0:
+        if depth == 0:
             return evaluateAtkDef(state, new_colour) # evaluatePower(state) # 
 
         
@@ -572,12 +572,12 @@ class minimax:
                 
         for s in get_successors(this_state, new_colour):
             v = min(v, self.max_value(s[0], alpha, beta, new_colour, depth - 1))
-
+            """
             if PRINT_COUNT < 2 and (self.max_value(s[0], alpha, beta, new_colour, depth - 1) == math.inf):
                 print("successor is infinity with board below")
                 print(render_board(s[0]))
                 PRINT_COUNT += 1
-
+            """
             if v <= alpha:
                 return v
             beta = min(beta, v)
