@@ -3,15 +3,12 @@
 
 import copy
 from dataclasses import dataclass
-from json.encoder import INFINITY
-from turtle import color
 from referee.game import \
     PlayerColor, Action, SpawnAction, SpreadAction, HexPos, HexDir
 from .utils import render_board
 #from .minimax import minimax
 
 import math
-import random
 
 # This is the entry point for your game playing agent. Currently the agent
 # simply spawns a token at the centre of the board if playing as RED, and
@@ -19,7 +16,8 @@ import random
 # intended to serve as an example of how to use the referee API -- obviously
 # this is not a valid strategy for actually playing the game!
 
-PRINT_COUNT = 0
+BREADTH = 3
+DEPTH = 3
 
 DIM = 7
 MAX_POWER = DIM-1
@@ -38,10 +36,6 @@ def generateCoveragePositionPower():
             for power in range(1,4):
                 covered = []
                 for direction in DIRECTIONS:
-                
-                    """ Finds the destination of a node after a move in a direction """
-                
-
                     tempPower = power
                     tempR = position[0]
                     tempQ = position[1]
@@ -110,41 +104,6 @@ class Agent:
             return SpreadAction(HexPos(next_move[1][0], next_move[1][1]), HexDir(next_move[2]))
         else:
             return SpawnAction(HexPos(next_move[1][0], next_move[1][1]))
-        
-
-
-        # temperary random algorithm
-        '''
-        r = random.randint(0,6)
-        q = random.randint(0,6)
-
-        # dir already taken by Python ? 
-        direction = None
-        match random.randint(0,5):
-            case 0:
-                direction = HexDir.Up
-            case 1:
-                direction = HexDir.UpRight
-            case 2:
-                direction = HexDir.DownRight
-            case 3:
-                direction = HexDir.Down
-            case 4:
-                direction = HexDir.DownLeft
-            case 5:
-                direction = HexDir.UpLeft
-        
-        print(render_board(self.board.internalBoard))        
-        if (r,q) not in self.board.internalBoard and self.board.totalPower < MAX_BOARD_POW:
-            return SpawnAction(HexPos(r, q))
-        else:
-            myBoard = {}
-            for piece in self.board.internalBoard.keys():
-                if self.board.internalBoard.get(piece)[0] == colour:
-                    myBoard[piece] = self.board.internalBoard.get(piece)
-            position = random.choice(list(myBoard.keys()))
-            return SpreadAction(HexPos(position[0], position[1]), direction)
-        '''
                 
                    
     ### DOES IT ACCOUNT FOR OPPONENT"S SPAWNS AND SPREADS? AND PLAYER SPREADS THAT GOES OVER MAX POWER?
@@ -153,14 +112,14 @@ class Agent:
         Update the agent with the last player's action.
         Note: this updates your agent as well.
         """
-        self.board.turn += 1
+        #self.board.turn += 1
         match action:
             case SpawnAction(cell):
                 print(f"Testing: {color} SPAWN at {cell}")
                 c = 'r'
                 if (color == PlayerColor.BLUE):
                     c = 'b'
-                self.board.totalPower += 1
+                #self.board.totalPower += 1
                 self.board.spawn((cell.r, cell.q), c)
                 return
             
@@ -168,7 +127,7 @@ class Agent:
             case SpreadAction(cell, direction):
                 print(f"Testing: {color} SPREAD from {cell}, {direction}")
                 self.board.spread((cell.r, cell.q), (direction.value.r, direction.value.q))
-                self.board.totalPower = getTotalPower(self.board.internalBoard)
+                #self.board.totalPower = getTotalPower(self.board.internalBoard)
                 return
 
 ################################################################################
@@ -185,11 +144,11 @@ class InternalBoard:
         """
         Initialise the internal board.
         """
-        self.totalPower: int = 0
+        #self.totalPower: int = 0
         self.internalBoard: dict[tuple, tuple] = {}
-        self.bluePieces: int = 0
-        self.redPieces: int = 0
-        self.turn: int = 0
+        #self.bluePieces: int = 0
+        #self.redPieces: int = 0
+        #self.turn: int = 0
 
 
     def spawn(self, position: tuple, color):
@@ -271,7 +230,7 @@ class InternalBoard:
     def getKeys(self):
         return self.internalBoard.keys()
 
-
+    """
     # could use game_over(board), in board.py
     def is_terminal(self):
         # if maximum number of turns is reached
@@ -284,12 +243,12 @@ class InternalBoard:
         
         # else continue
         return False
+    """
     
     
 # get the successors, possible states we should explore
 def get_successors(board: InternalBoard, colourToMove):
 
-    global PRINT_COUNT
     successors = []
 
     # do we need to copy board into state? just use the board argument
@@ -314,75 +273,49 @@ def get_successors(board: InternalBoard, colourToMove):
     
     for position in state.internalBoard.keys():
         if(state.internalBoard.get(position)[0] == colourToMove):
-        # if(state.get(position)[0] == colourToMove):
-            # print(state.get(position)[0])
             # spread in all directions
             for direction in DIRECTIONS:
                 temp.spread(position, direction)
-
+                """
                 if temp.countPieces(ENEMY[colourToMove]) >= board.countPieces(ENEMY[colourToMove]):
                     temp = copy.deepcopy(board)
                     continue
-
+                """
 
                 successors.append((temp.internalBoard, ('spread', position, direction)))
                 temp = copy.deepcopy(board) # reset temp to original state
-
-    # random spawn
     
-    """
-    if getTotalPower(state.internalBoard) < MAX_BOARD_POW:
-        for _ in range(3):
-            r = random.randint(0,6)
-            q = random.randint(0,6)
-        
-            if((r, q) not in state.internalBoard.keys()):
-                temp.spawn((r, q), colourToMove)
-                successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
-                temp = copy.deepcopy(board)
-    """
-
     if getTotalPower(state.internalBoard) < MAX_BOARD_POW:
         temp = copy.deepcopy(board)
-        #found = False
+        #possible = []
         for r in range(DIM):
-            #if found:
-            #    break
             for q in range(DIM):
                 if (r,q) not in state.internalBoard.keys():
                     playerCoverage = colourToMoveCoverage[r,q]
-                    if (playerCoverage > 0 or board.turn < 2) and playerCoverage >= colourJustPlayedCoverage[(r,q)]:
-                        #found = True
+                    if playerCoverage >= colourJustPlayedCoverage[(r,q)]:
                         temp.spawn((r, q), colourToMove)
+                        #possible.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
                         successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
                         temp = copy.deepcopy(board)
-                        #break
-    
-    # fail safe
-    if not successors:
-        temp = copy.deepcopy(board)
-        found = False
+        #if possible:
+        #    if colourToMove == 'r':
+        #        possible = sorted(possible, key = lambda x: evaluateAtkDef(x[0], 'b'), reverse=True)
+        #    else:
+        #        possible = sorted(possible, key = lambda x: evaluateAtkDef(x[0], 'r'))
 
-        if getTotalPower(state.internalBoard) < MAX_BOARD_POW:
-            temp = copy.deepcopy(board)
-            found = False
-            for r in range(DIM):
-                if found:
-                    break
-                for q in range(DIM):
-                    if (r,q) not in state.internalBoard.keys():
-                        found = True
-                        temp.spawn((r, q), colourToMove)
-                        successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
-                        break
-        else:
-            for position in state.internalBoard.keys():                
-                if(state.internalBoard.get(position)[0] == colourToMove):
-                    temp.spread(position, (0,1))
-                    successors.append((temp.internalBoard, ('spread', position, (0,1))))
-                    break
+        #    take = min(len(possible), 8)           
+        #    for i in range(take):
+        #        successors.append(possible[i])
+
+    # person just moved is r --> next to move is b, vice versa
+    if colourToMove == 'r':
+        successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0], 'b'), reverse=True)
+    else:
+        successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0], 'r'))
     
-    return successors
+    b = min(len(successors), BREADTH)
+
+    return successors[1:b]
 
 
 # higher power favours red, lower power favours blue
@@ -397,7 +330,7 @@ def evaluatePower(board: dict[tuple, tuple]):
 
 def getTotalPower(board):
     power = 0
-    for (_, (_, k)) in board.items():
+    for (_, k) in board.values():
         power += k
     return power
 
@@ -409,6 +342,34 @@ def generateCoverageDict():
             coverage[(i,j)] = 0
 
     return coverage
+
+def countColour(board, colour):
+    total = 0
+    for (position, (c, k)) in board.items():
+        if c == colour:
+            total += 1
+
+    return total
+
+def peaceful(board):
+    redCoverage = {}
+    blueCoverage = {}
+
+    # 2.
+    for (position, (colour, power)) in board.items():
+        for covered in coveragePositionPower[(position, power)]:
+            if colour == 'r':
+                redCoverage[covered] = 1
+            else:
+                blueCoverage[covered] = 1
+    
+    # 3.
+    for (position, (colour, power)) in board.items():
+        if (position in redCoverage.keys() and colour == 'b' or 
+            position in blueCoverage.keys() and colour == 'r'):
+            return False
+    
+    return True
 
 # gives each node's power (or something else?) to a certain player based on
 # the node's colour and 
@@ -426,6 +387,7 @@ def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
     # MAYBE ONLY NEED LIST FOR colourJustPlayed ... to remove the best capture for that colour
     colourToMoveScores = []
     colourJustPlayedScores = []
+    maxJustPlayedPowerCoverage = 0
 
     # 2.
     for (position, (colour, power)) in board.items():
@@ -445,19 +407,21 @@ def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
         else:
             if colourJustPlayedCoverage[position] > colourToMoveCoverage[position]:
                 colourJustPlayedScores.append(power)
+                if power > maxJustPlayedPowerCoverage:
+                    maxJustPlayedPowerCoverage = power
             else:
                 colourToMoveScores.append(power)
     
     # 4.
-    sortJustPlayedScores = sorted(colourJustPlayedScores)
+    #sortJustPlayedScores = sorted(colourJustPlayedScores)
     
-    if sortJustPlayedScores:
-        sortJustPlayedScores.pop()
+    #if sortJustPlayedScores:
+    #    sortJustPlayedScores.pop()
 
     if colourToMove == 'r':
-        return sum(colourToMoveScores) - sum(sortJustPlayedScores)
+        return sum(colourToMoveScores) - sum(colourJustPlayedScores) + maxJustPlayedPowerCoverage
     else:
-        return sum(sortJustPlayedScores) - sum(colourToMoveScores)
+        return sum(colourJustPlayedScores) - sum(colourToMoveScores) - maxJustPlayedPowerCoverage
 
 def getCoverages(board):
     redCoverage = generateCoverageDict()
@@ -504,26 +468,32 @@ class minimax:
         else: 
             new_colour = 'r'
         
-        if self.board.turn >= MAX_TURNS:
-            return 0 
-        
-        if self.board.turn > 1: #self.board.is_terminal():
-            if self.board.countPieces('r') == 0:
-                return -1000
-            elif self.board.countPieces('b') == 0:
-                return 1000
+        if peaceful(state):
+            return evaluatePower(state)
+
+        #if self.board.turn > 1:
+        if countColour(state,'r') == 0:
+            return -1000
+        elif countColour(state,'b') == 0:
+            return 1000
 
         if depth == 0:
+            """
+            print("depth of 0 ... evaluate the following board to ", evaluateAtkDef(state, new_colour))
+            print(render_board(state))
+            """
             return evaluateAtkDef(state, new_colour) # evaluatePower(state) # 
         
         v = -math.inf
            
         for s in get_successors(this_state, new_colour):
-            #print("successor again: = ",s)
+            """
+            print("from max value ::: successor below: ", "colourJustPlayed = ",new_colour," depth = ",depth - 1)
+            print(render_board(s[0]))
+            """
+
             v = max(v, self.min_value(s[0], alpha, beta, new_colour, depth - 1))
 
-            #if v == math.inf:
-                #print("value of v is ",v)
             alpha = max(alpha, v)
             if alpha >= beta:
                 return beta
@@ -541,29 +511,31 @@ class minimax:
         else: 
             new_colour = 'r'
             
-        # if this_state.is_terminal():  
-        # ----> TERMINAL STATES NEEDS TO RETURN EVALUATION INFINITY OR NEGATIVE INFINITY
-        # E.g. if there is no BLUE pieces --> Red wins. therefore infinity evaluation
-        #      if there is no RED pieces --> Blue wins, therefore negative infinity evaluation
-        # is_terminal() whether no blue or no red pieces remains, and assign the above evaluations accordingly,
-        # rather than considering whether either no blue or red pieces
+        if peaceful(state):
+            return evaluatePower(state)
 
-        if self.board.turn >= MAX_TURNS:
-            return 0
-
-        if self.board.turn > 1: #self.board.is_terminal():
-            if self.board.countPieces('r') == 0:
-                return -1000
-            elif self.board.countPieces('b') == 0:
-                return 1000
+        #if self.board.turn > 1: 
+        if countColour(state, 'r') == 0:
+            return -1000
+        elif countColour(state, 'b') == 0:
+            return 1000
 
         if depth == 0:
+            """
+            print("depth of 0 ... evaluate the following board to ", evaluateAtkDef(state, new_colour))
+            print(render_board(state))
+            """
             return evaluateAtkDef(state, new_colour) # evaluatePower(state) # 
 
         
         v = math.inf
                 
         for s in get_successors(this_state, new_colour):
+            """
+            print("from min_value ::: successor below: ", "colourJustPlayed = ",new_colour," depth = ",depth - 1)
+            print(render_board(s[0]))
+            """
+
             v = min(v, self.max_value(s[0], alpha, beta, new_colour, depth - 1))
             """
             if PRINT_COUNT < 2 and (self.max_value(s[0], alpha, beta, new_colour, depth - 1) == math.inf):
@@ -590,15 +562,24 @@ class minimax:
         beta = math.inf
         next_move = None
         
+        """
+        print("current board: player = ", colour)
+        print(render_board(board.internalBoard))
+        print("successors")
+        """
+
         if colour == 'r':
             best_score = -math.inf
             for s in get_successors(self.board, colour):
-                #print("successor : ", s)
-                
-                #print("calling minvalue for child")
-                score = self.min_value(s[0], alpha, beta, colour, 3)
+                """
+                print("calling minvalue for child FOR ONE FROM THE ROOT NODE")
+                print(render_board(s[0]))
+                """
+                score = self.min_value(s[0], alpha, beta, colour, DEPTH)
 
-                #print(f"score is {score}")
+
+                #print("score = ",score)
+
                 if score > best_score:
                     best_score = score
                     next_move = s
@@ -607,12 +588,15 @@ class minimax:
         else:
             best_score = math.inf
             for s in get_successors(self.board, colour):
-                #print("successor : ", s)
-                
-                #print("calling maxvalue for child")
-                score = self.max_value(s[0], alpha, beta, colour, 3)
+                """
+                print("calling maxvalue for child FOR ONE FROM THE ROOT NODE")
+                print(render_board(s[0]))
+                """
+                score = self.max_value(s[0], alpha, beta, colour, DEPTH)
+                  
 
-                #print(f"score is {score}")
+                #print("score = ",score)
+
                 if score < best_score:
                     best_score = score
                     next_move = s
@@ -623,7 +607,7 @@ class minimax:
             print("well you lost")
             return None
         
-        print(next_move[1])   
+        #print(next_move[1])   
         return next_move[1]
 
 def apply_ansi(str, bold=True, color=None):
