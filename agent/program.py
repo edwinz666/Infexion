@@ -167,7 +167,7 @@ class Agent:
             case SpreadAction(cell, direction):
                 print(f"Testing: {color} SPREAD from {cell}, {direction}")
                 self.board.spread((cell.r, cell.q), (direction.value.r, direction.value.q))
-                self.board.totalPower = getTotalPower(self.board)
+                self.board.totalPower = getTotalPower(self.board.internalBoard)
                 return
 
 ################################################################################
@@ -317,6 +317,7 @@ def get_successors(board: InternalBoard, colourToMove):
             for direction in DIRECTIONS:
                 #captured = False
 
+                
                 #for enemyPosition in state.internalBoard.keys():
                 #    if state.internalBoard.get(enemyPosition)[0] != colourToMove:
                 #        if enemyPosition in coveragePositionPower[position]:
@@ -332,37 +333,39 @@ def get_successors(board: InternalBoard, colourToMove):
                 if temp.countPieces(colourToMove) <= board.countPieces(colourToMove):
                     temp = copy.deepcopy(board)
                     continue
+                
 
                 successors.append((temp.internalBoard, ('spread', position, direction)))
                 temp = copy.deepcopy(board) # reset temp to original state
 
     # random spawn
-
-
-    for i in range(3):
-        r = random.randint(0,6)
-        q = random.randint(0,6)
+    
+    """
+    if getTotalPower(state.internalBoard) < MAX_BOARD_POW:
+        for _ in range(3):
+            r = random.randint(0,6)
+            q = random.randint(0,6)
         
-        if((r, q) not in state.internalBoard.keys()):
-            temp.spawn((r, q), colourToMove)
-            successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
-            temp = copy.deepcopy(board)
+            if((r, q) not in state.internalBoard.keys()):
+                temp.spawn((r, q), colourToMove)
+                successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
+                temp = copy.deepcopy(board)
+    """
 
+    temp = copy.deepcopy(board)
 
-    #temp = copy.deepcopy(board)
-
-    #found = False
-    #for r in range(DIM):
-    #    if found:
-    #        break
-    #    for q in range(DIM):
-    #        if (r,q) not in state.internalBoard.keys():
-    #            if colourToMoveCoverage[(r,q)] >= colourJustPlayedCoverage[(r,q)]:
-    #                found = True
-    #                temp.spawn((r, q), colourToMove)
-    #                successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
-    #                temp = copy.deepcopy(board)
-    #                break
+    found = False
+    for r in range(DIM):
+        if found:
+            break
+        for q in range(DIM):
+            if (r,q) not in state.internalBoard.keys():
+                if colourToMoveCoverage[(r,q)] >= colourJustPlayedCoverage[(r,q)]:
+                    found = True
+                    temp.spawn((r, q), colourToMove)
+                    successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
+                    temp = copy.deepcopy(board)
+                    break
     
     
     
@@ -510,17 +513,18 @@ class minimax:
             new_colour = 'b'
         else: 
             new_colour = 'r'
-            
+        
+        if self.board.turn >= MAX_TURNS:
+            return 0 
+        
         if self.board.turn > 1: #self.board.is_terminal():
             if self.board.countPieces('r') == 0:
-                return -math.inf
+                return -1000
             elif self.board.countPieces('b') == 0:
                 print("no blue pieces")
-                return math.inf
-        elif self.board.turn >= MAX_TURNS:
-                return 0
+                return 1000
 
-        elif depth == 0:
+        if depth == 0:
             return evaluateAtkDef(state, new_colour) # evaluatePower(state) # 
         
         v = -math.inf
@@ -555,16 +559,17 @@ class minimax:
         # is_terminal() whether no blue or no red pieces remains, and assign the above evaluations accordingly,
         # rather than considering whether either no blue or red pieces
 
+        if self.board.turn >= MAX_TURNS:
+            return 0
+
         if self.board.turn > 1: #self.board.is_terminal():
             if self.board.countPieces('r') == 0:
-                return -math.inf
+                return -1000
             elif self.board.countPieces('b') == 0:
                 print("no blue pieces")
-                return math.inf
-        elif self.board.turn >= MAX_TURNS:
-                return 0
+                return 1000
 
-        elif depth == 0:
+        if depth == 0:
             return evaluateAtkDef(state, new_colour) # evaluatePower(state) # 
 
         
