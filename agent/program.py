@@ -4,6 +4,7 @@
 import copy
 from dataclasses import dataclass
 from json.encoder import INFINITY
+from turtle import color
 from referee.game import \
     PlayerColor, Action, SpawnAction, SpreadAction, HexPos, HexDir
 from .utils import render_board
@@ -317,33 +318,12 @@ def get_successors(board: InternalBoard, colourToMove):
             # print(state.get(position)[0])
             # spread in all directions
             for direction in DIRECTIONS:
-                #captured = False
-
-                
-                #for enemyPosition in state.internalBoard.keys():
-                #    if state.internalBoard.get(enemyPosition)[0] != colourToMove:
-                #        if enemyPosition in coveragePositionPower[position]:
-                #            captured = True
-                #            break
-                
-                #if not captured:
-                #    continue
-
                 temp.spread(position, direction)
-                
-                """
-                # doesnt account for a 1 capturing a 6 currently
-                if temp.countPieces(colourToMove) <= board.countPieces(colourToMove):
+
+                if temp.countPieces(ENEMY[colourToMove]) >= board.countPieces(ENEMY[colourToMove]):
                     temp = copy.deepcopy(board)
                     continue
-                
-                #capture made...
-                if PRINT_COUNT < 5:
-                    print("SPREAD", position, direction, "to get to")
-                    print(render_board(board.internalBoard))
-                    print(render_board(temp.internalBoard))
-                    PRINT_COUNT += 5
-                """
+
 
                 successors.append((temp.internalBoard, ('spread', position, direction)))
                 temp = copy.deepcopy(board) # reset temp to original state
@@ -378,33 +358,32 @@ def get_successors(board: InternalBoard, colourToMove):
                         temp = copy.deepcopy(board)
                         #break
     
-    
-    
-    return successors
+    # fail safe
+    if not successors:
+        temp = copy.deepcopy(board)
+        found = False
 
-    """
-
-    for r in range(DIM):
-        for q in range(DIM):
-            position = (r, q)
-        
-            if position in state.internalBoard.keys():
+        if getTotalPower(state.internalBoard) < MAX_BOARD_POW:
+            temp = copy.deepcopy(board)
+            found = False
+            for r in range(DIM):
+                if found:
+                    break
+                for q in range(DIM):
+                    if (r,q) not in state.internalBoard.keys():
+                        found = True
+                        temp.spawn((r, q), colourToMove)
+                        successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
+                        break
+        else:
+            for position in state.internalBoard.keys():                
                 if(state.internalBoard.get(position)[0] == colourToMove):
-                    # print(state.get(position)[0])
-                    # spread in all directions
-                    for direction in DIRECTIONS:
-                        temp.spread(position, direction)
-                        successors.append((temp.internalBoard, ('spread', position, direction)))
-                        temp = copy.deepcopy(board) # reset temp to original state
-
-            else:
-                temp.spawn(position, colourToMove)
-                successors.append((temp.internalBoard, ('spawn', position, colourToMove)))
-                temp = copy.deepcopy(board) # reset temp to original state
+                    temp.spread(position, (0,1))
+                    successors.append((temp.internalBoard, ('spread', position, (0,1))))
+                    break
     
     return successors
-    
-    """
+
 
 # higher power favours red, lower power favours blue
 def evaluatePower(board: dict[tuple, tuple]):
@@ -617,7 +596,7 @@ class minimax:
                 #print("successor : ", s)
                 
                 #print("calling minvalue for child")
-                score = self.min_value(s[0], alpha, beta, colour, 2)
+                score = self.min_value(s[0], alpha, beta, colour, 3)
 
                 #print(f"score is {score}")
                 if score > best_score:
@@ -631,7 +610,7 @@ class minimax:
                 #print("successor : ", s)
                 
                 #print("calling maxvalue for child")
-                score = self.max_value(s[0], alpha, beta, colour, 2)
+                score = self.max_value(s[0], alpha, beta, colour, 3)
 
                 #print(f"score is {score}")
                 if score < best_score:
