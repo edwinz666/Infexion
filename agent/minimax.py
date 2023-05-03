@@ -1,7 +1,7 @@
 import copy
 from json.encoder import INFINITY
 from .internalBoard import InternalBoard
-
+import random
 import math
 
 PRINT_COUNT = 0
@@ -43,15 +43,15 @@ class minimax:
             new_colour = 'b'
         else: 
             new_colour = 'r'
-        
-        if self.board.turn >= MAX_TURNS:
-            return 0 
-        
+            
         if self.board.turn > 1: #self.board.is_terminal():
             if self.board.countPieces('r') == 0:
-                return -1000
+                return -math.inf
             elif self.board.countPieces('b') == 0:
-                return 1000
+                print("no blue pieces")
+                return math.inf
+        if self.board.turn >= MAX_TURNS:
+                return 0
 
         if depth == 0:
             return evaluateAtkDef(state, new_colour) # evaluatePower(state) # 
@@ -88,14 +88,14 @@ class minimax:
         # is_terminal() whether no blue or no red pieces remains, and assign the above evaluations accordingly,
         # rather than considering whether either no blue or red pieces
 
-        if self.board.turn >= MAX_TURNS:
-            return 0
-
         if self.board.turn > 1: #self.board.is_terminal():
             if self.board.countPieces('r') == 0:
-                return -1000
+                return -math.inf
             elif self.board.countPieces('b') == 0:
-                return 1000
+                print("no blue pieces")
+                return math.inf
+        if self.board.turn >= MAX_TURNS:
+            return 0
 
         if depth == 0:
             return evaluateAtkDef(state, new_colour) # evaluatePower(state) # 
@@ -136,7 +136,7 @@ class minimax:
                 #print("successor : ", s)
                 
                 #print("calling minvalue for child")
-                score = self.min_value(s[0], alpha, beta, colour, 3)
+                score = self.min_value(s[0], alpha, beta, colour, 2)
 
                 #print(f"score is {score}")
                 if score > best_score:
@@ -147,10 +147,10 @@ class minimax:
         else:
             best_score = math.inf
             for s in get_successors(self.board, colour):
-                #print("successor : ", s)
+               #print("successor : ", s)
                 
                 #print("calling maxvalue for child")
-                score = self.max_value(s[0], alpha, beta, colour, 3)
+                score = self.max_value(s[0], alpha, beta, colour, 2)
 
                 #print(f"score is {score}")
                 if score < best_score:
@@ -160,11 +160,12 @@ class minimax:
         
         
         if next_move is None:
-            print("well you lost")
+            #print("well you lost")
             return None
         
-        print(next_move[1])   
+        #print(next_move[1])   
         return next_move[1]
+
     
 ################################################################################
 ######################## Minimax Helper Functions ##############################
@@ -180,7 +181,9 @@ def generateCoveragePositionPower():
                 covered = []
                 for direction in DIRECTIONS:
                 
-                    # Finds the destination of a node after a move in a direction 
+                    """ Finds the destination of a node after a move in a direction """
+                
+
                     tempPower = power
                     tempR = position[0]
                     tempQ = position[1]
@@ -218,8 +221,6 @@ coveragePositionPower = generateCoveragePositionPower()
     
 # get the successors, possible states we should explore
 def get_successors(board: InternalBoard, colourToMove):
-
-    global PRINT_COUNT
     successors = []
 
     # do we need to copy board into state? just use the board argument
@@ -244,54 +245,86 @@ def get_successors(board: InternalBoard, colourToMove):
     
     for position in state.internalBoard.keys():
         if(state.internalBoard.get(position)[0] == colourToMove):
-            
+        # if(state.get(position)[0] == colourToMove):
+            # print(state.get(position)[0])
             # spread in all directions
             for direction in DIRECTIONS:
+                #captured = False
+
+                #for enemyPosition in state.internalBoard.keys():
+                #    if state.internalBoard.get(enemyPosition)[0] != colourToMove:
+                #        if enemyPosition in coveragePositionPower[position]:
+                #            captured = True
+                #            break
+                
+                #if not captured:
+                #    continue
+
                 temp.spread(position, direction)
 
-                if temp.countPieces(ENEMY[colourToMove]) >= board.countPieces(ENEMY[colourToMove]):
+                # doesnt account for a 1 capturing a 6 currently
+                if temp.countPieces(colourToMove) < board.countPieces(colourToMove):
                     temp = copy.deepcopy(board)
                     continue
-
 
                 successors.append((temp.internalBoard, ('spread', position, direction)))
                 temp = copy.deepcopy(board) # reset temp to original state
 
-    if getTotalPower(state.internalBoard) < MAX_BOARD_POW:
-        temp = copy.deepcopy(board)
-        for r in range(DIM):
-            for q in range(DIM):
-                if (r,q) not in state.internalBoard.keys():
-                    playerCoverage = colourToMoveCoverage[r,q]
-                    if (playerCoverage > 0 or board.turn < 2) and playerCoverage >= colourJustPlayedCoverage[(r,q)]:
-                        temp.spawn((r, q), colourToMove)
-                        successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
-                        temp = copy.deepcopy(board)
-    # fail safe
-    if not successors:
-        temp = copy.deepcopy(board)
-        found = False
+    # random spawn
 
-        if getTotalPower(state.internalBoard) < MAX_BOARD_POW:
+
+    for i in range(3):
+        r = random.randint(0,6)
+        q = random.randint(0,6)
+        
+        if((r, q) not in state.internalBoard.keys()):
+            temp.spawn((r, q), colourToMove)
+            successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
             temp = copy.deepcopy(board)
-            found = False
-            for r in range(DIM):
-                if found:
-                    break
-                for q in range(DIM):
-                    if (r,q) not in state.internalBoard.keys():
-                        found = True
-                        temp.spawn((r, q), colourToMove)
-                        successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
-                        break
-        else:
-            for position in state.internalBoard.keys():                
-                if(state.internalBoard.get(position)[0] == colourToMove):
-                    temp.spread(position, (0,1))
-                    successors.append((temp.internalBoard, ('spread', position, (0,1))))
-                    break
+
+
+    #temp = copy.deepcopy(board)
+
+    #found = False
+    #for r in range(DIM):
+    #    if found:
+    #        break
+    #    for q in range(DIM):
+    #        if (r,q) not in state.internalBoard.keys():
+    #            if colourToMoveCoverage[(r,q)] >= colourJustPlayedCoverage[(r,q)]:
+    #                found = True
+    #                temp.spawn((r, q), colourToMove)
+    #                successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
+    #                temp = copy.deepcopy(board)
+    #                break
+    
+    
     
     return successors
+
+    """
+
+    for r in range(DIM):
+        for q in range(DIM):
+            position = (r, q)
+        
+            if position in state.internalBoard.keys():
+                if(state.internalBoard.get(position)[0] == colourToMove):
+                    # print(state.get(position)[0])
+                    # spread in all directions
+                    for direction in DIRECTIONS:
+                        temp.spread(position, direction)
+                        successors.append((temp.internalBoard, ('spread', position, direction)))
+                        temp = copy.deepcopy(board) # reset temp to original state
+
+            else:
+                temp.spawn(position, colourToMove)
+                successors.append((temp.internalBoard, ('spawn', position, colourToMove)))
+                temp = copy.deepcopy(board) # reset temp to original state
+    
+    return successors
+    
+    """
 
 # higher power favours red, lower power favours blue
 def evaluatePower(board: dict[tuple, tuple]):
@@ -305,7 +338,7 @@ def evaluatePower(board: dict[tuple, tuple]):
 
 def getTotalPower(board):
     power = 0
-    for (_, (_, k)) in board.items():
+    for (_, (_, k)) in board.internalBoard.items():
         power += k
     return power
 

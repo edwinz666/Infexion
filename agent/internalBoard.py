@@ -16,11 +16,14 @@ ENEMY = {'r': 'b', 'b': 'r'}
 
 @dataclass
 class InternalBoard:
-    # A data structure to represent the internal state of the board.
+    """
+    A data structure to represent the internal state of the board.
+    """
     
     def __init__(self):
-        # Initialise the internal board.
-
+        """
+        Initialise the internal board.
+        """
         self.totalPower: int = 0
         self.internalBoard: dict[tuple, tuple] = {}
         self.bluePieces: int = 0
@@ -29,7 +32,7 @@ class InternalBoard:
 
 
     def spawn(self, position: tuple, color):
-            # Spawns a piece (its position) on the board
+            """ Spawns a piece (its position) on the board """
             
             if position in self.internalBoard.keys():
                 return False
@@ -38,16 +41,16 @@ class InternalBoard:
                 return True
     
     def countPieces(self, color: str):
-        # Counts the number of pieces on the board for a given color
+        """ Counts the number of pieces on the board for a given color """
         count = 0
         for piece in self.internalBoard.keys():
             if self.internalBoard.get(piece)[0] == color:
                 count += 1
         return count
 
-    # helper functions for spreading a thingo
+    '''helper functions for spreading a thingo'''
     def spread(self, piece: tuple, direction: tuple):
-        # Spreads a piece (its position) in a direction on the board
+        """ Spreads a piece (its position) in a direction on the board """
         colour = self.internalBoard.get(piece)[0]
         spreadDistance = self.internalBoard.get(piece)[1]
 
@@ -68,7 +71,7 @@ class InternalBoard:
             
 
     def findNewPosition(self, position, direction):
-        # Finds the destination of a node after a move in a direction
+        """ Finds the destination of a node after a move in a direction """
 
         newR = position[0] + direction[0]
         newQ = position[1] + direction[1]
@@ -87,9 +90,10 @@ class InternalBoard:
         return (newR, newQ)
 
     def spreadToNode(self, newPosition, colour):
-            # Increments power of a node and changes its colour if it is an enemy node, 
-            # or removing the node if the max power is reached 
- 
+            """ 
+            Increments power of a node and changes its colour if it is an enemy node, 
+            or removing the node if the max power is reached 
+            """
             if newPosition not in self.internalBoard.keys():
                 self.internalBoard[newPosition] = (colour, 1)    
             else:
