@@ -287,6 +287,8 @@ class InternalBoard:
     
 # get the successors, possible states we should explore
 def get_successors(board: InternalBoard, colourToMove):
+
+    global PRINT_COUNT
     successors = []
 
     # do we need to copy board into state? just use the board argument
@@ -328,12 +330,20 @@ def get_successors(board: InternalBoard, colourToMove):
                 #    continue
 
                 temp.spread(position, direction)
-
+                
+                """
                 # doesnt account for a 1 capturing a 6 currently
-                if temp.countPieces(colourToMove) < board.countPieces(colourToMove):
+                if temp.countPieces(colourToMove) <= board.countPieces(colourToMove):
                     temp = copy.deepcopy(board)
                     continue
                 
+                #capture made...
+                if PRINT_COUNT < 5:
+                    print("SPREAD", position, direction, "to get to")
+                    print(render_board(board.internalBoard))
+                    print(render_board(temp.internalBoard))
+                    PRINT_COUNT += 5
+                """
 
                 successors.append((temp.internalBoard, ('spread', position, direction)))
                 temp = copy.deepcopy(board) # reset temp to original state
@@ -352,20 +362,21 @@ def get_successors(board: InternalBoard, colourToMove):
                 temp = copy.deepcopy(board)
     """
 
-    temp = copy.deepcopy(board)
-
-    found = False
-    for r in range(DIM):
-        if found:
-            break
-        for q in range(DIM):
-            if (r,q) not in state.internalBoard.keys():
-                if colourToMoveCoverage[(r,q)] >= colourJustPlayedCoverage[(r,q)]:
-                    found = True
-                    temp.spawn((r, q), colourToMove)
-                    successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
-                    temp = copy.deepcopy(board)
-                    break
+    if getTotalPower(state.internalBoard) < MAX_BOARD_POW:
+        temp = copy.deepcopy(board)
+        #found = False
+        for r in range(DIM):
+            #if found:
+            #    break
+            for q in range(DIM):
+                if (r,q) not in state.internalBoard.keys():
+                    playerCoverage = colourToMoveCoverage[r,q]
+                    if (playerCoverage > 0 or board.turn < 2) and playerCoverage >= colourJustPlayedCoverage[(r,q)]:
+                        #found = True
+                        temp.spawn((r, q), colourToMove)
+                        successors.append((temp.internalBoard, ('spawn', (r, q), colourToMove)))
+                        temp = copy.deepcopy(board)
+                        #break
     
     
     
@@ -407,7 +418,7 @@ def evaluatePower(board: dict[tuple, tuple]):
 
 def getTotalPower(board):
     power = 0
-    for (_, (_, k)) in board.internalBoard.items():
+    for (_, (_, k)) in board.items():
         power += k
     return power
 
@@ -521,7 +532,6 @@ class minimax:
             if self.board.countPieces('r') == 0:
                 return -1000
             elif self.board.countPieces('b') == 0:
-                print("no blue pieces")
                 return 1000
 
         if depth == 0:
@@ -566,7 +576,6 @@ class minimax:
             if self.board.countPieces('r') == 0:
                 return -1000
             elif self.board.countPieces('b') == 0:
-                print("no blue pieces")
                 return 1000
 
         if depth == 0:
@@ -605,12 +614,12 @@ class minimax:
         if colour == 'r':
             best_score = -math.inf
             for s in get_successors(self.board, colour):
-                print("successor : ", s)
+                #print("successor : ", s)
                 
-                print("calling minvalue for child")
+                #print("calling minvalue for child")
                 score = self.min_value(s[0], alpha, beta, colour, 2)
 
-                print(f"score is {score}")
+                #print(f"score is {score}")
                 if score > best_score:
                     best_score = score
                     next_move = s
@@ -619,12 +628,12 @@ class minimax:
         else:
             best_score = math.inf
             for s in get_successors(self.board, colour):
-                print("successor : ", s)
+                #print("successor : ", s)
                 
-                print("calling maxvalue for child")
+                #print("calling maxvalue for child")
                 score = self.max_value(s[0], alpha, beta, colour, 2)
 
-                print(f"score is {score}")
+                #print(f"score is {score}")
                 if score < best_score:
                     best_score = score
                     next_move = s
