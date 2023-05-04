@@ -17,7 +17,7 @@ import math
 # this is not a valid strategy for actually playing the game!
 
 BREADTH = 2
-DEPTH = 21
+DEPTH = 5
 
 DIM = 7
 MAX_POWER = DIM-1
