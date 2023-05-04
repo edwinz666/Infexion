@@ -7,7 +7,6 @@ from referee.game import \
     PlayerColor, Action, SpawnAction, SpreadAction, HexPos, HexDir
 from .utils import render_board
 from .coverage import getCoverages, peaceful, evaluateAtkDef
-#from .minimax import minimax
 
 import math
 
@@ -27,11 +26,6 @@ MAX_TURNS = 343
 
 DIRECTIONS = ((1,-1), (1,0), (0,1), (-1,1), (-1,0), (0,-1))
 ENEMY = {'r': 'b', 'b': 'r'}
-
-
-
-# coveragePositionPower = generateCoveragePositionPower()
-
 
 ################################################################################
 ############################## Agent Class #####################################
@@ -93,7 +87,7 @@ class Agent:
                 return
 
 ################################################################################
-########################### Ineternal Board Class ###############################
+########################### Ineternal Board Class ##############################
 ################################################################################
 
 @dataclass
@@ -103,25 +97,11 @@ class Board:
     """
     
     def __init__(self):
-        """
-        Initialise the internal board.
-        """
-        #self.totalPower: int = 0
+        # Initialise the internal board.
         self.board: dict[tuple, tuple] = {}
-        #self.bluePieces: int = 0
-        #self.redPieces: int = 0
-        #self.turn: int = 0
-
 
     def spawn(self, position: tuple, color):
         """ Spawns a piece (its position) on the board """
-            
-        #if position in self.board.keys():
-        #    return False
-        #else:
-        #    self.board[position] = (color, 1)
-        #    return True
-
         self.board[position] = (color, 1)
     
 
@@ -133,7 +113,6 @@ class Board:
                 count += 1
         return count
 
-    '''helper functions for spreading a thingo'''
     def spread(self, piece: tuple, direction: tuple):
         """ Spreads a piece (its position) in a direction on the board """
         colour = self.board.get(piece)[0]
@@ -195,30 +174,15 @@ class Board:
     def getKeys(self):
         return self.board.keys()
 
-    """
-    # could use game_over(board), in board.py
-    def is_terminal(self):
-        # if maximum number of turns is reached
-        if(self.turn >= MAX_TURNS):
-            return True
-        
-        # else if no blue or red pieces left
-        elif(self.countPieces('b') == 0 or self.countPieces('r') == 0):
-            return True
-        
-        # else continue
-        return False
-    """
+################################################################################
+######################## Minimax helper functions ##############################
+################################################################################   
     
-    
-# get the successors, possible states we should explore
 def get_successors(state: Board, colourToMove):
-
+    """ gets the successors, possible states we need to explore """
     successors = []
 
     # do we need to copy board into state? just use the board argument
-    #state = copy.deepcopy(board)
-    #temp = copy.deepcopy(board)
     temp = copy.deepcopy(state)
     
     # loop through the board and find all player's piece
@@ -273,6 +237,7 @@ def get_successors(state: Board, colourToMove):
 
 # higher power favours red, lower power favours blue
 def evaluatePower(board: dict[tuple, tuple]):
+    """"""
     totalPower = 0
     for v in board.values():
         if v[0] == 'r':
@@ -297,15 +262,12 @@ def countColour(board, colour):
 
 
 ################################################################################
-############################### End Program ####################################
+############################# Minimax Class ####################################
 ################################################################################
-
 
 class minimax:
     
-    def __init__(self): #, board: Board):
-        #self.board = board
-        #self.state = board.board
+    def __init__(self):
         return
         
     # minimax implementation
@@ -399,3 +361,7 @@ class minimax:
                 beta = min(beta, best_score)
         
         return next_move[1]
+
+################################################################################
+############################### End Program ####################################
+################################################################################
