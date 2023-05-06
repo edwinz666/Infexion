@@ -7,7 +7,7 @@ from referee.game import \
     PlayerColor, Action, SpawnAction, SpreadAction, HexPos, HexDir
 from .utils import render_board
 from .coverage import getCoverages, peaceful, evaluateAtkDef
-
+#import random
 import math
 
 # This is the entry point for your game playing agent. Currently the agent
@@ -16,8 +16,8 @@ import math
 # intended to serve as an example of how to use the referee API -- obviously
 # this is not a valid strategy for actually playing the game!
 
-BREADTH = 7
-DEPTH = 3
+BREADTH = 12
+DEPTH = 2
 
 DIM = 7
 MAX_POWER = DIM-1
@@ -36,6 +36,7 @@ class Agent:
         """
         Initialise the agent.
         """
+          
         self.colour = None
         self.board = Board()
         #self.Minimax = minimax(self.board)
@@ -44,7 +45,7 @@ class Agent:
             case PlayerColor.RED:
                 print("Testing: I am playing as red")
                 self.colour = 'r'
-            case PlayerColor.BLUE:               
+            case PlayerColor.BLUE:
                 print("Testing: I am playing as blue")
                 self.colour = 'b'
 
@@ -52,14 +53,18 @@ class Agent:
         """
         Return the next action to take.
         """
-
         ######## calling minimax algorithm for next move ########
-        next_move = self.Minimax.next_move(self.board, self.colour)
-        if (next_move[0] == 'spread'):
-            return SpreadAction(HexPos(next_move[1][0], next_move[1][1]), HexDir(next_move[2]))
+        if (self.board.checkEndGame(self.colour) == True and self.board.endgameAction(self.colour) != None):
+                next_move = self.board.endgameAction(self.colour)
         else:
-            return SpawnAction(HexPos(next_move[1][0], next_move[1][1]))
-                
+                next_move = self.Minimax.next_move(self.board, self.colour)
+            
+        if (next_move[0] == 'spread'):
+                return SpreadAction(HexPos(next_move[1][0], next_move[1][1]), HexDir(next_move[2]))
+        else:
+                return SpawnAction(HexPos(next_move[1][0], next_move[1][1]))
+       
+                    
                    
     ### DOES IT ACCOUNT FOR OPPONENT"S SPAWNS AND SPREADS? AND PLAYER SPREADS THAT GOES OVER MAX POWER?
     def turn(self, color: PlayerColor, action: Action, **referee: dict):
@@ -67,7 +72,6 @@ class Agent:
         Update the agent with the last player's action.
         Note: this updates your agent as well.
         """
-        #self.board.turn += 1
 
         match action:
             case SpawnAction(cell):
@@ -173,6 +177,35 @@ class Board:
     
     def getKeys(self):
         return self.board.keys()
+    
+    def checkEndGame(self, colour):
+        """ Checks if the game is about to end for the other player """
+        c = 'r'
+        if colour == 'r':
+            c = 'b'
+        
+        if  countColour(self.board, c) == 1:
+            return True
+        else:
+            return False
+    
+    def endgameAction(self, colour):
+        """ Performs the action for the endgame """
+        # find the last piece on the board
+        c = 'r'
+        if colour == 'r':
+            c = 'b'
+        temp = copy.deepcopy(self)
+        for piece in self.board.keys():
+            if self.board.get(piece)[0] == colour:
+                # spread the piece in all directions
+                for direction in DIRECTIONS:
+                    temp.spread(piece, direction)
+                    if countColour(temp.board, c) == 0:
+                        return ('spread', piece, direction)
+                    temp = copy.deepcopy(self) # reset temp to original state
+        return None
+
 
 ################################################################################
 ######################## Minimax helper functions ##############################
