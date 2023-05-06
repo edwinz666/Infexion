@@ -1,78 +1,33 @@
 # COMP30024 Artificial Intelligence, Semester 1 2023
 # Project Part B: Random Playing Agent
-
-from referee.game import \
-    PlayerColor, Action, SpawnAction, SpreadAction, HexPos, HexDir
-
-import random
-
-# This is the entry point for your game playing agent. Currently the agent
-# simply spawns a token at the centre of the board if playing as RED, and
-# spreads a token at the centre of the board if playing as BLUE. This is
-# intended to serve as an example of how to use the referee API -- obviously
-# this is not a valid strategy for actually playing the game!
-
-class Agent:
-    def __init__(self, color: PlayerColor, **referee: dict):
-        """
-        Initialise the agent.
-        """
-        self._color = color
-        match color:
-            case PlayerColor.RED:
-                print("Testing: I am playing as red")
-            case PlayerColor.BLUE:
-                print("Testing: I am playing as blue")
-
-    def action(self, **referee: dict) -> Action:
-        """
-        Return the next action to take.
-        """
-        r = random.randint(0,6)
-        q = random.randint(0,6)
-
-
-        match self._color:
-            
-            case PlayerColor.RED:
-                r = random.randint(0,6)
-                q = random.randint(0,6)
-
-                exists = False
-                for i in range(0,6):
-                    for j in range(0,6):
-                        if referee.items() == (r,q):
-                            exists = True
-                            
-                if exists:
-                    return SpreadAction(HexPos(r, q), HexDir(Up))
-                else:
-                    return SpawnAction(HexPos(r, q))
-            case PlayerColor.BLUE:
-                r = random.randint(0,6)
-                q = random.randint(0,6)
-
-                exists = False
-                for i in range(0,6):
-                    for j in range(0,6):
-                        if referee.items() == (r,q):
-                            exists = True
-                if exists:
-                    return SpreadAction(HexPos(r, q), HexDir(Up))
-                else:
-                    return SpawnAction(HexPos(r, q))
-
-    def turn(self, color: PlayerColor, action: Action, **referee: dict):
-        """
-        Update the agent with the last player's action.
-        """
-        match action:
-            case SpawnAction(cell):
-                print(f"Testing: {color} SPAWN at {cell}")
-                pass
-            case SpreadAction(cell, direction):
-                print(f"Testing: {color} SPREAD from {cell}, {direction}")
-                pass
-
-
+'''
+ """
+        else:
+            r = random.randint(0,6)
+            q = random.randint(0,6)
+            direction = None
+            match random.randint(0,5):
+                case 0:
+                    direction = HexDir.Up
+                case 1:
+                    direction = HexDir.UpRight
+                case 2:
+                    direction = HexDir.DownRight
+                case 3:
+                    direction = HexDir.Down
+                case 4:
+                    direction = HexDir.DownLeft
+                case 5:
+                    direction = HexDir.UpLeft        
+            if (r,q) not in self.board.board and getTotalPower(self.board.board) < MAX_BOARD_POW:
+                return SpawnAction(HexPos(r, q))
+            else:
+                myBoard = {}
+                for piece in self.board.board.keys():
+                    if self.board.board.get(piece)[0] == self.colour:
+                        myBoard[piece] = self.board.board.get(piece)
+                position = random.choice(list(myBoard.keys()))
+                return SpreadAction(HexPos(position[0], position[1]), direction)
+                """
+'''
    
