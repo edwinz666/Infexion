@@ -1,5 +1,6 @@
 DIM = 7
 DIRECTIONS = ((1,-1), (1,0), (0,1), (-1,1), (-1,0), (0,-1))
+# POWER_DISTANCE_COVERAGE = {1: (1,), 2: (2,2), 3: (2,3,2), 4: (2,3,3), 5: (2,3,3), 6: (2,3,3)}
 
 def generateCoveragePositionPower():
     coveragePositionPower = {}
@@ -8,6 +9,7 @@ def generateCoveragePositionPower():
         for j in range(DIM):
             position = (i, j)
             for power in range(1,4):
+                # list of positions covered for each (position, power) pair AND how many times its covered?
                 covered = []
                 for direction in DIRECTIONS:
                     tempPower = power

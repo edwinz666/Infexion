@@ -1,6 +1,11 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\agent",
+    "\\referee",
+    "\\referee\\agent",
+    "\\referee\\game"
   ],
+  "SelectedNode": "\\agent\\program.py",
   "PreviewInSolutionExplorer": false
 }

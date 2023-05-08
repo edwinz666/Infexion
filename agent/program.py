@@ -16,8 +16,8 @@ import math
 # intended to serve as an example of how to use the referee API -- obviously
 # this is not a valid strategy for actually playing the game!
 
-BREADTH = 12
-DEPTH = 2
+BREADTH = 3
+DEPTH = 5
 
 DIM = 7
 MAX_POWER = DIM-1
@@ -234,16 +234,18 @@ def get_successors(state: Board, colourToMove):
         colourToMoveCoverage = coverages[1]
         colourJustPlayedCoverage = coverages[0]
     
+    spreads = []
     for position in state.board.keys():
         if(state.board.get(position)[0] == colourToMove):
             # spread in all directions
             for direction in DIRECTIONS:
                 temp.spread(position, direction)
                 #temp.turn += 1
-                #successors.append((temp.board, ('spread', position, direction)))
-                successors.append((temp, ('spread', position, direction)))
+                #successors.append((temp, ('spread', position, direction)))
+                spreads.append((temp, ('spread', position, direction)))
                 temp = copy.deepcopy(state) # reset temp to original state
     
+    spawns = []
     if getTotalPower(state.board) < MAX_BOARD_POW:
         #temp = copy.deepcopy(state)
         for r in range(DIM):
@@ -253,19 +255,36 @@ def get_successors(state: Board, colourToMove):
                     if playerCoverage >= colourJustPlayedCoverage[(r,q)]:
                         temp.spawn((r, q), colourToMove)
                         #temp.turn += 1
-                        #successors.append((temp.board, ('spawn', (r, q), colourToMove)))
-                        successors.append((temp, ('spawn', (r, q), colourToMove)))
+                        #successors.append((temp, ('spawn', (r, q), colourToMove)))
+                        spawns.append((temp, ('spawn', (r, q), colourToMove)))
                         temp = copy.deepcopy(state)
 
     # person just moved is r --> next to move is b, vice versa
-    if colourToMove == 'r':
-        successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0].board, 'b'), reverse=True)
-    else:
-        successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0].board, 'r'))
-    
-    b = min(len(successors), BREADTH)
+    #if colourToMove == 'r':
+    #    successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0].board, 'b'), reverse=True)
+    #else:
+    #    successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0].board, 'r'))
 
-    return successors[1:b]
+    if colourToMove == 'r':
+        spawns = sorted(spawns, key = lambda x: evaluateAtkDef(x[0].board, 'b'), reverse=True)
+        spreads = sorted(spreads, key = lambda x: evaluateAtkDef(x[0].board, 'b'), reverse=True)
+    else:
+        spawns = sorted(spawns, key = lambda x: evaluateAtkDef(x[0].board, 'r'))
+        spreads = sorted(spreads, key = lambda x: evaluateAtkDef(x[0].board, 'r'))
+
+    b = min(len(spreads), BREADTH - 1)
+
+    successors = spreads[0:(b-1)]
+
+    if spawns:
+        successors.append(spawns[0])
+    elif len(spreads) > b:
+        successors.append(spreads[b])
+
+    return successors
+    #b = min(len(successors), BREADTH)
+
+    #return successors[1:b]
 
 
 # higher power favours red, lower power favours blue
