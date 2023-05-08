@@ -16,8 +16,8 @@ import math
 # intended to serve as an example of how to use the referee API -- obviously
 # this is not a valid strategy for actually playing the game!
 
-BREADTH = 3
-DEPTH = 5
+BREADTH = 5
+DEPTH = 3
 
 DIM = 7
 MAX_POWER = DIM-1
@@ -241,8 +241,8 @@ def get_successors(state: Board, colourToMove):
             for direction in DIRECTIONS:
                 temp.spread(position, direction)
                 #temp.turn += 1
-                #successors.append((temp, ('spread', position, direction)))
-                spreads.append((temp, ('spread', position, direction)))
+                successors.append((temp, ('spread', position, direction)))
+                #spreads.append((temp, ('spread', position, direction)))
                 temp = copy.deepcopy(state) # reset temp to original state
     
     spawns = []
@@ -255,36 +255,39 @@ def get_successors(state: Board, colourToMove):
                     if playerCoverage >= colourJustPlayedCoverage[(r,q)]:
                         temp.spawn((r, q), colourToMove)
                         #temp.turn += 1
-                        #successors.append((temp, ('spawn', (r, q), colourToMove)))
-                        spawns.append((temp, ('spawn', (r, q), colourToMove)))
+                        successors.append((temp, ('spawn', (r, q), colourToMove)))
+                        #spawns.append((temp, ('spawn', (r, q), colourToMove)))
                         temp = copy.deepcopy(state)
 
     # person just moved is r --> next to move is b, vice versa
-    #if colourToMove == 'r':
-    #    successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0].board, 'b'), reverse=True)
-    #else:
-    #    successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0].board, 'r'))
-
     if colourToMove == 'r':
-        spawns = sorted(spawns, key = lambda x: evaluateAtkDef(x[0].board, 'b'), reverse=True)
-        spreads = sorted(spreads, key = lambda x: evaluateAtkDef(x[0].board, 'b'), reverse=True)
+        successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0].board, 'b'), reverse=True)
     else:
-        spawns = sorted(spawns, key = lambda x: evaluateAtkDef(x[0].board, 'r'))
-        spreads = sorted(spreads, key = lambda x: evaluateAtkDef(x[0].board, 'r'))
+        successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0].board, 'r'))
+    
+    b = min(len(successors), BREADTH)
 
-    b = min(len(spreads), BREADTH - 1)
+    return successors[0:(b-1)]
 
-    successors = spreads[0:(b-1)]
 
-    if spawns:
-        successors.append(spawns[0])
-    elif len(spreads) > b:
-        successors.append(spreads[b])
+    #if colourToMove == 'r':
+    #    spawns = sorted(spawns, key = lambda x: evaluateAtkDef(x[0].board, 'b'), reverse=True)
+    #    spreads = sorted(spreads, key = lambda x: evaluateAtkDef(x[0].board, 'b'), reverse=True)
+    #else:
+    #    spawns = sorted(spawns, key = lambda x: evaluateAtkDef(x[0].board, 'r'))
+    #    spreads = sorted(spreads, key = lambda x: evaluateAtkDef(x[0].board, 'r'))
 
-    return successors
-    #b = min(len(successors), BREADTH)
+    #b = min(len(spreads), BREADTH - 1)
 
-    #return successors[1:b]
+    #successors = spreads[0:(b-1)]
+
+    #if spawns:
+    #    successors.append(spawns[0])
+    #elif len(spreads) > b:
+    #    successors.append(spreads[b])
+
+    #return successors
+
 
 
 # higher power favours red, lower power favours blue
@@ -336,20 +339,30 @@ class minimax:
         
         new_colour = ENEMY[colour]
         
-        if peaceful(board): # or state.turn > MAX_TURNS:
-            return evaluatePower(board)
+
 
         if countColour(board,'r') == 0:
             return -1000
         elif countColour(board,'b') == 0:
             return 1000
 
+        if peaceful(board): # or state.turn > MAX_TURNS:
+            return evaluatePower(board)
+
+        #if depth == 0:
+        #    return evaluateAtkDef(board, new_colour)
         if depth == 0:
-            return evaluateAtkDef(board, new_colour)
+            return evaluateAtkDef(board, colour)
         
         v = -math.inf
            
-        for s in get_successors(state, new_colour):
+        #for s in get_successors(state, new_colour):
+        #    v = max(v, self.min_value(s[0], alpha, beta, new_colour, depth - 1))
+
+        #    alpha = max(alpha, v)
+        #    if alpha >= beta:
+        #        return beta
+        for s in get_successors(state, colour):
             v = max(v, self.min_value(s[0], alpha, beta, new_colour, depth - 1))
 
             alpha = max(alpha, v)
@@ -363,20 +376,30 @@ class minimax:
 
         new_colour = ENEMY[colour]
             
-        if peaceful(board): # or state.turn > MAX_TURNS:
-            return evaluatePower(board)
+
 
         if countColour(board, 'r') == 0:
             return -1000
         elif countColour(board, 'b') == 0:
             return 1000
 
+        if peaceful(board): # or state.turn > MAX_TURNS:
+            return evaluatePower(board)
+
+        #if depth == 0:
+        #    return evaluateAtkDef(board, new_colour) 
         if depth == 0:
-            return evaluateAtkDef(board, new_colour) 
+           return evaluateAtkDef(board, colour) 
         
         v = math.inf
                 
-        for s in get_successors(state, new_colour):
+        #for s in get_successors(state, new_colour):
+        #    v = min(v, self.max_value(s[0], alpha, beta, new_colour, depth - 1))
+
+        #    if v <= alpha:
+        #        return v
+        #    beta = min(beta, v)
+        for s in get_successors(state, colour):
             v = min(v, self.max_value(s[0], alpha, beta, new_colour, depth - 1))
 
             if v <= alpha:
@@ -392,10 +415,29 @@ class minimax:
         beta = math.inf
         next_move = None
 
+        #if colour == 'r':
+        #    best_score = -math.inf
+        #    for s in get_successors(board, colour):
+        #        score = self.min_value(s[0], alpha, beta, colour, DEPTH)
+
+        #        if score > best_score:
+        #            best_score = score
+        #            next_move = s
+        #        alpha = max(alpha, best_score)
+        
+        #else:
+        #    best_score = math.inf
+        #    for s in get_successors(board, colour):
+        #        score = self.max_value(s[0], alpha, beta, colour, DEPTH)
+
+        #        if score < best_score:
+        #            best_score = score
+        #            next_move = s
+        #        beta = min(beta, best_score)
         if colour == 'r':
             best_score = -math.inf
             for s in get_successors(board, colour):
-                score = self.min_value(s[0], alpha, beta, colour, DEPTH)
+                score = self.min_value(s[0], alpha, beta, ENEMY[colour], DEPTH)
 
                 if score > best_score:
                     best_score = score
@@ -405,7 +447,7 @@ class minimax:
         else:
             best_score = math.inf
             for s in get_successors(board, colour):
-                score = self.max_value(s[0], alpha, beta, colour, DEPTH)
+                score = self.max_value(s[0], alpha, beta, ENEMY[colour], DEPTH)
 
                 if score < best_score:
                     best_score = score
