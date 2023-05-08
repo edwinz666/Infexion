@@ -17,10 +17,10 @@ import math
 # this is not a valid strategy for actually playing the game!
 
 BREADTH = 5
-DEPTH = 3
+DEPTH = 5
 
 DIM = 7
-MAX_POWER = DIM-1
+MAX_POWER = DIM - 1
 MAX_BOARD_POW = 49
 MAX_TURNS = 343
 
@@ -234,7 +234,7 @@ def get_successors(state: Board, colourToMove):
         colourToMoveCoverage = coverages[1]
         colourJustPlayedCoverage = coverages[0]
     
-    spreads = []
+    #spreads = []
     for position in state.board.keys():
         if(state.board.get(position)[0] == colourToMove):
             # spread in all directions
@@ -245,7 +245,7 @@ def get_successors(state: Board, colourToMove):
                 #spreads.append((temp, ('spread', position, direction)))
                 temp = copy.deepcopy(state) # reset temp to original state
     
-    spawns = []
+    #spawns = []
     if getTotalPower(state.board) < MAX_BOARD_POW:
         #temp = copy.deepcopy(state)
         for r in range(DIM):
@@ -338,20 +338,26 @@ class minimax:
         board = state.board
         
         new_colour = ENEMY[colour]
-        
-
+        #print()
+        #print("depth = ",depth)
+        #print(render_board(state.board))
 
         if countColour(board,'r') == 0:
+            #print("evaluation = ",-1000)
             return -1000
         elif countColour(board,'b') == 0:
+            #print("evaluation = ",1000)
             return 1000
 
         if peaceful(board): # or state.turn > MAX_TURNS:
+            #print("evaluation = ",evaluatePower(board))
             return evaluatePower(board)
 
         #if depth == 0:
         #    return evaluateAtkDef(board, new_colour)
         if depth == 0:
+            #print("colour to move = ",colour)
+            #print("evaluation = ",evaluateAtkDef(board,colour))
             return evaluateAtkDef(board, colour)
         
         v = -math.inf
@@ -375,21 +381,28 @@ class minimax:
         board = state.board
 
         new_colour = ENEMY[colour]
-            
-
+        
+        #print()
+        #print("depth = ",depth)
+        #print(render_board(state.board))
 
         if countColour(board, 'r') == 0:
+            #print("evaluation = -1000")
             return -1000
         elif countColour(board, 'b') == 0:
+            #print("evaluation = 1000")
             return 1000
 
         if peaceful(board): # or state.turn > MAX_TURNS:
+            #print("evaluation = ",evaluatePower(board))
             return evaluatePower(board)
 
         #if depth == 0:
         #    return evaluateAtkDef(board, new_colour) 
         if depth == 0:
-           return evaluateAtkDef(board, colour) 
+            #print("colour to move = ",colour)
+            #print("evaluation = ",evaluateAtkDef(board,colour))
+            return evaluateAtkDef(board, colour) 
         
         v = math.inf
                 
@@ -437,17 +450,22 @@ class minimax:
         if colour == 'r':
             best_score = -math.inf
             for s in get_successors(board, colour):
-                score = self.min_value(s[0], alpha, beta, ENEMY[colour], DEPTH)
-
+                #print("current successor for red")
+                #print(render_board(s[0].board))
+                score = self.min_value(s[0], alpha, beta, ENEMY[colour], DEPTH - 1)
+                
                 if score > best_score:
                     best_score = score
                     next_move = s
+                    #print("new best score found for red")
+                    #print(score)
+                    #print(render_board(s[0].board))
                 alpha = max(alpha, best_score)
         
         else:
             best_score = math.inf
             for s in get_successors(board, colour):
-                score = self.max_value(s[0], alpha, beta, ENEMY[colour], DEPTH)
+                score = self.max_value(s[0], alpha, beta, ENEMY[colour], DEPTH - 1)
 
                 if score < best_score:
                     best_score = score
@@ -459,3 +477,75 @@ class minimax:
 ################################################################################
 ############################### End Program ####################################
 ################################################################################
+def apply_ansi(str, bold=True, color=None):
+    """
+    Wraps a string with ANSI control codes to enable basic terminal-based
+    formatting on that string. Note: Not all terminals will be compatible!
+
+    Arguments:
+
+    str -- String to apply ANSI control codes to
+    bold -- True if you want the text to be rendered bold
+    color -- Colour of the text. Currently only red/"r" and blue/"b" are
+        supported, but this can easily be extended if desired...
+
+    """
+    bold_code = "\033[1m" if bold else ""
+    color_code = ""
+    if color == "r":
+        color_code = "\033[31m"
+    if color == "b":
+        color_code = "\033[34m"
+    return f"{bold_code}{color_code}{str}\033[0m"
+
+def render_board(board: 'dict[tuple, tuple]', ansi=False) -> str:
+    """
+    Visualise the Infexion hex board via a multiline ASCII string.
+    The layout corresponds to the axial coordinate system as described in the
+    game specification document.
+    
+    Example:
+
+        >>> board = {
+        ...     (5, 6): ("r", 2),
+        ...     (1, 0): ("b", 2),
+        ...     (1, 1): ("b", 1),
+        ...     (3, 2): ("b", 1),
+        ...     (1, 3): ("b", 3),
+        ... }
+        >>> print_board(board, ansi=False)
+
+                                ..     
+                            ..      ..     
+                        ..      ..      ..     
+                    ..      ..      ..      ..     
+                ..      ..      ..      ..      ..     
+            b2      ..      b1      ..      ..      ..     
+        ..      b1      ..      ..      ..      ..      ..     
+            ..      ..      ..      ..      ..      r2     
+                ..      b3      ..      ..      ..     
+                    ..      ..      ..      ..     
+                        ..      ..      ..     
+                            ..      ..     
+                                ..     
+    """
+    dim = 7
+    output = ""
+    for row in range(dim * 2 - 1):
+        output += "    " * abs((dim - 1) - row)
+        for col in range(dim - abs(row - (dim - 1))):
+            # Map row, col to r, q
+            r = max((dim - 1) - row, 0) + col
+            q = max(row - (dim - 1), 0) + col
+            if (r, q) in board:
+                color, power = board[(r, q)]
+                text = f"{color}{power}".center(4)
+                if ansi:
+                    output += apply_ansi(text, color=color, bold=False)
+                else:
+                    output += text
+            else:
+                output += " .. "
+            output += "    "
+        output += "\n"
+    return output
