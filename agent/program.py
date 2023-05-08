@@ -328,7 +328,6 @@ class minimax:
     # minimax implementation
 
     # state: the current board state
-    # game: game description
     # alpha: MAX score along the path to state
     # beta: MIN score along the path to state
     
