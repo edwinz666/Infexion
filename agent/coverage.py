@@ -242,8 +242,6 @@ def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
     # MAYBE ONLY NEED LIST FOR colourJustPlayed ... to remove the best capture for that colour
     colourToMoveScore = 0
     maxJustPlayedPowerCoverage = 0
-    #secondaryOverlappingScore = 0
-    #tertiaryScore = 0
     secondaryOverlappingScore = 0
 
     # 2.
@@ -261,16 +259,11 @@ def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
     #print(colourJustPlayedCoverage)
     # 3.
     for (position, (defendingColour, power)) in board.items():
-        #tertiaryScore += colourToMoveCoverage[position] - colourJustPlayedCoverage[position]
-        #if colourToMoveCoverage[position] > 0 and colourJustPlayedCoverage[position] > 0:
-        #    secondaryOverlappingScore += (colourToMoveCoverage[position] - colourJustPlayedCoverage[position])
-        #secondaryOverlappingScore += (colourToMoveCoverage[position] - colourJustPlayedCoverage[position])
+        secondaryOverlappingScore += (colourToMoveCoverage[position] - colourJustPlayedCoverage[position])
 
         if defendingColour == colourToMove:           
             if colourToMoveCoverage[position] >= colourJustPlayedCoverage[position]:
                 colourToMoveScore += power
-                #colourToMoveScores.append(power)
-                secondaryOverlappingScore += min(1, colourToMoveCoverage[position] - colourJustPlayedCoverage[position])
             else:
                 colourToMoveScore -= power
                 if power > maxJustPlayedPowerCoverage:
@@ -278,7 +271,6 @@ def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
         else: # defendingColour is the colour who just played
             if colourJustPlayedCoverage[position] >= colourToMoveCoverage[position]:
                 colourToMoveScore -= power
-                secondaryOverlappingScore -= min(1, colourJustPlayedCoverage[position] - colourToMoveCoverage[position])
             else:
                 colourToMoveScore += power
 
