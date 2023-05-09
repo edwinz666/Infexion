@@ -1,4 +1,27 @@
 # greedy game playing agent
+# created by Bill Zhu for comp30024 project B
+# Date: 05/09/2023
+# Description: This agent uses a greedy strategy to play the game. It will
+#              evaluate the score of each possible move and choose the move
+#              that gives the highest score.
+#              The score is calculated by the following formula:
+#              score = 2 * (number of cells owned by the agent) +
+#                      (number of cells owned by the agent that are adjacent to
+#                       enemy cells) -
+#                      (number of cells owned by the agent that are adjacent to
+#                       friendly cells) +
+#                      (number of cells owned by the agent that are adjacent to
+#                       enemy cells that are adjacent to friendly cells) -
+#                      (number of cells owned by the agent that are adjacent to
+#                       friendly cells that are adjacent to enemy cells)
+#              The agent will also check if it is in the endgame. If it is, it
+#              will try to spread to the last enemy piece on the board.
+#              If it is not in the endgame, it will try to spread to the
+#              position that gives the highest score.
+#              If it cannot spread, it will spawn a piece in the position that
+#              gives the highest score.
+# the above comments were made by an AI lol :)
+
 import copy
 from dataclasses import dataclass
 from referee.game import \
@@ -273,7 +296,7 @@ class Board:
 
         for r in range(DIM):
             for q in range(DIM):
-                if (r, q) not in self.board.keys():
+                if (r, q) not in self.board.keys() and getTotalPower(self.board) < MAX_BOARD_POW:
                     legalMoves.append(('spawn', (r, q)))
         
         return legalMoves
