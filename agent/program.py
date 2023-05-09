@@ -16,8 +16,8 @@ import math
 # intended to serve as an example of how to use the referee API -- obviously
 # this is not a valid strategy for actually playing the game!
 
-BREADTH = 5
-DEPTH = 5
+BREADTH = 4
+DEPTH = 6
 
 DIM = 7
 MAX_POWER = DIM - 1
