@@ -260,7 +260,7 @@ def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
     # 3.
     for (position, (defendingColour, power)) in board.items():
         if colourToMoveCoverage[position] > 0 and colourJustPlayedCoverage[position] > 0:
-            secondaryOverlappingScore += colourToMoveCoverage[position] - colourJustPlayedCoverage[position]
+            secondaryOverlappingScore += (colourToMoveCoverage[position] - colourJustPlayedCoverage[position])
 
         if defendingColour == colourToMove:           
             if colourToMoveCoverage[position] >= colourJustPlayedCoverage[position]:
