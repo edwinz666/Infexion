@@ -16,8 +16,8 @@ import math
 # intended to serve as an example of how to use the referee API -- obviously
 # this is not a valid strategy for actually playing the game!
 
-BREADTH = 7
-DEPTH = 4
+BREADTH = 6
+DEPTH = 5
 
 DIM = 7
 MAX_POWER = DIM - 1
@@ -258,6 +258,7 @@ def get_successors(state: Board, colourToMove):
                         successors.append((temp, ('spawn', (r, q), colourToMove)))
                         #spawns.append((temp, ('spawn', (r, q), colourToMove)))
                         temp = copy.deepcopy(state)
+    
 
     bestForPower = None
     # person just moved is r --> next to move is b, vice versa
@@ -278,18 +279,8 @@ def get_successors(state: Board, colourToMove):
         chosenSuccessors.pop()
 
     chosenSuccessors.insert(0, bestForPower)
-      
+
     return chosenSuccessors
-
-    ## person just moved is r --> next to move is b, vice versa
-    #if colourToMove == 'r':
-    #    successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0].board, 'b'), reverse=True)
-    #else:
-    #    successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0].board, 'r'))
-    
-    #b = min(len(successors), BREADTH)
-
-    #return successors[0:(b-1)]
 
 
     #if colourToMove == 'r':
