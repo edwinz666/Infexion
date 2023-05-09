@@ -379,7 +379,7 @@ class minimax:
         if depth == 0:
             #print("colour to move = ",colour)
             #print("evaluation = ",evaluateAtkDef(board,colour))
-            return evaluateAtkDef(board, colour)
+            return evaluateAtkDef(board, colour)[0]
         
         v = -math.inf
            
@@ -423,7 +423,7 @@ class minimax:
         if depth == 0:
             #print("colour to move = ",colour)
             #print("evaluation = ",evaluateAtkDef(board,colour))
-            return evaluateAtkDef(board, colour) 
+            return evaluateAtkDef(board, colour)[0] 
         
         v = math.inf
                 

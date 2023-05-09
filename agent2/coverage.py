@@ -225,7 +225,6 @@ def peaceful(board):
 #    else:
 #        return -colourToMoveScore - maxJustPlayedPowerCoverage
 
-
 # gives each node's power (or something else?) to a certain player based on
 # the node's colour and 
 def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
@@ -242,6 +241,7 @@ def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
     # MAYBE ONLY NEED LIST FOR colourJustPlayed ... to remove the best capture for that colour
     colourToMoveScore = 0
     maxJustPlayedPowerCoverage = 0
+    secondaryOverlappingScore = 0
 
     # 2.
     for (position, (colour, power)) in board.items():
@@ -258,10 +258,14 @@ def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
     #print(colourJustPlayedCoverage)
     # 3.
     for (position, (defendingColour, power)) in board.items():
-        if defendingColour == colourToMove:
+        if colourToMoveCoverage[position] > 0 and colourJustPlayedCoverage[position] > 0:
+            secondaryOverlappingScore += colourToMoveCoverage[position] - colourJustPlayedCoverage[position]
+
+        if defendingColour == colourToMove:           
             if colourToMoveCoverage[position] >= colourJustPlayedCoverage[position]:
                 colourToMoveScore += power
                 #colourToMoveScores.append(power)
+                
             else:
                 colourToMoveScore -= power
                 if power > maxJustPlayedPowerCoverage:
@@ -272,7 +276,8 @@ def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
             else:
                 colourToMoveScore += power
 
+    ### add component that sorts by this first, but then after by overlapping territory?
     if colourToMove == 'r':
-        return colourToMoveScore + maxJustPlayedPowerCoverage
+        return (colourToMoveScore + maxJustPlayedPowerCoverage, secondaryOverlappingScore)
     else:
-        return -colourToMoveScore - maxJustPlayedPowerCoverage
+        return (-colourToMoveScore - maxJustPlayedPowerCoverage, -secondaryOverlappingScore)
