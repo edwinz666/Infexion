@@ -1,8 +1,17 @@
-# greedy game playing agent
 import copy
 from dataclasses import dataclass
 from referee.game import \
     PlayerColor, Action, SpawnAction, SpreadAction, HexPos, HexDir
+import random
+
+# This is the entry point for your game playing agent. Currently the agent
+# simply spawns a token at the centre of the board if playing as RED, and
+# spreads a token at the centre of the board if playing as BLUE. This is
+# intended to serve as an example of how to use the referee API -- obviously
+# this is not a valid strategy for actually playing the game!
+
+BREADTH = 7
+DEPTH = 4
 
 DIM = 7
 MAX_POWER = DIM - 1
@@ -36,16 +45,31 @@ class Agent:
         """
         Return the next action to take.
         """
-        ######## calling minimax algorithm for next move ########
-        if (self.board.checkEndGame(self.colour) == True and self.board.endgameAction(self.colour) != None):
-                next_move = self.board.endgameAction(self.colour)
+        r = random.randint(0,6)
+        q = random.randint(0,6)
+        direction = None
+        match random.randint(0,5):
+            case 0:
+                direction = HexDir.Up
+            case 1:
+                direction = HexDir.UpRight
+            case 2:
+                direction = HexDir.DownRight
+            case 3:
+                direction = HexDir.Down
+            case 4:
+                direction = HexDir.DownLeft
+            case 5:
+                direction = HexDir.UpLeft        
+        if (r,q) not in self.board.board and getTotalPower(self.board.board) < MAX_BOARD_POW:
+            return SpawnAction(HexPos(r, q))
         else:
-                next_move = self.greedy_strategy()
-            
-        if (next_move[0] == 'spread'):
-                return SpreadAction(HexPos(next_move[1][0], next_move[1][1]), HexDir(next_move[2]))
-        else:
-                return SpawnAction(HexPos(next_move[1][0], next_move[1][1]))
+                myBoard = {}
+                for piece in self.board.board.keys():
+                    if self.board.board.get(piece)[0] == self.colour:
+                        myBoard[piece] = self.board.board.get(piece)
+                position = random.choice(list(myBoard.keys()))
+                return SpreadAction(HexPos(position[0], position[1]), direction)
        
                     
                    
@@ -58,94 +82,20 @@ class Agent:
 
         match action:
             case SpawnAction(cell):
+                #print(f"Testing: {color} SPAWN at {cell}")
                 c = 'r'
                 if (color == PlayerColor.BLUE):
                     c = 'b'
+                #self.board.totalPower += 1
                 self.board.spawn((cell.r, cell.q), c)
                 return
             
+            ### NEED TO RE-CALCULATE POWER for any SPREADS?
             case SpreadAction(cell, direction):
+                #print(f"Testing: {color} SPREAD from {cell}, {direction}")
                 self.board.spread((cell.r, cell.q), (direction.value.r, direction.value.q))
+                #self.board.totalPower = getTotalPower(self.board.board)
                 return
-            
-    def greedy_strategy(self):
-        legal_moves = self.board.getLegalMoves(self.colour)
-        best_move = None
-        best_score = -float('inf')
-
-        for move in legal_moves:
-            next_state = copy.deepcopy(self.board)
-            next_state = self.apply_move(move, next_state)
-            score = self.evaluate_score(next_state.board, self.colour)
-            if score > best_score:
-                best_move = move
-                best_score = score
-        return best_move
-    
-    def apply_move(self, move:tuple, boardcopy):
-        if(move[0] == 'spread'):
-            boardcopy.spread(move[1], move[2])
-        else:
-            boardcopy.spawn(move[1], self.colour)
-
-        return boardcopy
-    
-    def evaluate_score(self, state:dict[tuple, tuple], colour):
-        result = 0
-        for piece in state.keys():
-            if state.get(piece)[0] == colour:
-                result += state.get(piece)[1]
-            if state.get(piece)[0] == ENEMY[colour]:
-                result -= state.get(piece)[1]
-            for direction in DIRECTIONS:
-                r = piece[0] + direction[0]
-                q = piece[1] + direction[1]
-                if (piece[0] + direction[0] < 0):
-                    r = 6
-                if (piece[0] + direction[0] > 6):
-                    r = 0
-                if (piece[1] + direction[1] < 0):
-                    q = 6
-                if (piece[1] + direction[1] > 6):
-                    q = 0
-                checkedpos = (r, q)
-                #print(checkedpos)
-                if checkedpos in state.keys() and state.get(checkedpos)[0] != colour:
-                    result -= 1
-                else:
-                    result += 1
-        return result
-        
-    def checkEndGame(self, colour):
-        """ Checks if the game is about to end for the other player """
-        c = 'r'
-        if colour == 'r':
-            c = 'b'
-        
-        if  countColour(self.board.board, c) == 0:
-            return True
-        else:
-            return False
-        
-    def endgameAction(self, colour):
-        """ Performs the action for the endgame """
-        # find the last piece on the board
-        c = 'r'
-        if colour == 'r':
-            c = 'b'
-        temp = copy.deepcopy(self.board)
-        for piece in self.board.board.keys():
-            if self.board.board.get(piece)[0] == colour:
-                # spread the piece in all directions
-                for direction in DIRECTIONS:
-                    temp.board.spread(piece, direction)
-                    if countColour(temp.board.board, c) == 0:
-                        return ('spread', piece, direction)
-                    temp = copy.deepcopy(self) # reset temp to original state
-        return None
-    
-    
-
 
 ################################################################################
 ########################### Ineternal Board Class ##############################
@@ -262,25 +212,7 @@ class Board:
                         return ('spread', piece, direction)
                     temp = copy.deepcopy(self) # reset temp to original state
         return None
-    
-    def getLegalMoves(self, colour):
-        """ Returns a list of all legal moves """
-        legalMoves = []
-        for piece in self.board.keys():
-            if self.board.get(piece)[0] == colour:
-                for direction in DIRECTIONS:
-                    legalMoves.append(('spread', piece, direction))
 
-        for r in range(DIM):
-            for q in range(DIM):
-                if (r, q) not in self.board.keys():
-                    legalMoves.append(('spawn', (r, q)))
-        
-        return legalMoves
-
-
-
-    
 def evaluatePower(board: dict[tuple, tuple]):
     """"""
     totalPower = 0
@@ -304,5 +236,3 @@ def countColour(board, colour):
             total += 1
 
     return total
-
-
