@@ -242,6 +242,7 @@ def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
     colourToMoveScore = 0
     maxJustPlayedPowerCoverage = 0
     secondaryOverlappingScore = 0
+    tertiaryScore = 0
 
     # 2.
     for (position, (colour, power)) in board.items():
@@ -258,6 +259,7 @@ def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
     #print(colourJustPlayedCoverage)
     # 3.
     for (position, (defendingColour, power)) in board.items():
+        tertiaryScore += colourToMoveCoverage[position] - colourJustPlayedCoverage[position]
         if colourToMoveCoverage[position] > 0 and colourJustPlayedCoverage[position] > 0:
             secondaryOverlappingScore += (colourToMoveCoverage[position] - colourJustPlayedCoverage[position])
 
@@ -278,6 +280,6 @@ def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
 
     ### add component that sorts by this first, but then after by overlapping territory?
     if colourToMove == 'r':
-        return (colourToMoveScore + maxJustPlayedPowerCoverage, secondaryOverlappingScore)
+        return (colourToMoveScore + maxJustPlayedPowerCoverage, secondaryOverlappingScore, tertiaryScore)
     else:
-        return (-colourToMoveScore - maxJustPlayedPowerCoverage, -secondaryOverlappingScore)
+        return (-colourToMoveScore - maxJustPlayedPowerCoverage, -secondaryOverlappingScore, -tertiaryScore)

@@ -1,6 +1,11 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\agent",
+    "\\agent2",
+    "\\greedyAgent",
+    "\\randomAgent"
   ],
+  "SelectedNode": "\\agent2\\coverage.py",
   "PreviewInSolutionExplorer": false
 }
