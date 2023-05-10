@@ -16,7 +16,7 @@ import math
 # intended to serve as an example of how to use the referee API -- obviously
 # this is not a valid strategy for actually playing the game!
 
-BREADTH = 5
+BREADTH = 6
 DEPTH = 4
 
 DIM = 7
@@ -211,7 +211,7 @@ class Board:
 ######################## Minimax helper functions ##############################
 ################################################################################   
     
-def get_successors(state: Board, colourToMove):
+def get_root_successors(state: Board, colourToMove):
     """ gets the successors, possible states we need to explore """
     successors = []
 
@@ -281,34 +281,75 @@ def get_successors(state: Board, colourToMove):
       
     return chosenSuccessors
 
-    ## person just moved is r --> next to move is b, vice versa
-    #if colourToMove == 'r':
-    #    successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0].board, 'b'), reverse=True)
-    #else:
-    #    successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0].board, 'r'))
+def get_successors(state: Board, colourToMove):
+    """ gets the successors, possible states we need to explore """
+    successors = []
+
+    # do we need to copy board into state? just use the board argument
+    temp = copy.deepcopy(state)
     
-    #b = min(len(successors), BREADTH)
+    # loop through the board and find all player's piece
+    # when you land on a piece perform a spread in 6 directions
+    # if it is empty spawn a piece
+    # add to the successors list
+    
+    coverages = getCoverages(state.board)
+    colourToMoveCoverage = None
+    colourJustPlayedCoverage = None
 
-    #return successors[0:(b-1)]
+    if colourToMove == 'r':
+        colourToMoveCoverage = coverages[0]
+        colourJustPlayedCoverage = coverages[1]
+    else:
+        colourToMoveCoverage = coverages[1]
+        colourJustPlayedCoverage = coverages[0]
+    
+    #spreads = []
+    for position in state.board.keys():
+        if(state.board.get(position)[0] == colourToMove):
+            # spread in all directions
+            for direction in DIRECTIONS:
+                temp.spread(position, direction)
+                #temp.turn += 1
+                successors.append(temp)
+                #spreads.append((temp, ('spread', position, direction)))
+                temp = copy.deepcopy(state) # reset temp to original state
+    
+    #spawns = []
+    if getTotalPower(state.board) < MAX_BOARD_POW:
+        #temp = copy.deepcopy(state)
+        for r in range(DIM):
+            for q in range(DIM):
+                if (r,q) not in state.board.keys():
+                    playerCoverage = colourToMoveCoverage[r,q]
+                    if playerCoverage >= colourJustPlayedCoverage[(r,q)]:
+                        temp.spawn((r, q), colourToMove)
+                        #temp.turn += 1
+                        successors.append(temp)
+                        #spawns.append((temp, ('spawn', (r, q), colourToMove)))
+                        temp = copy.deepcopy(state)
 
+    bestForPower = None
+    # person just moved is r --> next to move is b, vice versa
+    if colourToMove == 'r':
+        successors = sorted(successors, key = lambda x: evaluateAtkDef(x.board, 'b'), reverse=True)
+        bestForPower = max(successors, key = lambda x: evaluatePower(x.board))
+    else:
+        successors = sorted(successors, key = lambda x: evaluateAtkDef(x.board, 'r'))
+        bestForPower = min(successors, key = lambda x: evaluatePower(x.board))
+    
+    b = min(len(successors), BREADTH)
 
-    #if colourToMove == 'r':
-    #    spawns = sorted(spawns, key = lambda x: evaluateAtkDef(x[0].board, 'b'), reverse=True)
-    #    spreads = sorted(spreads, key = lambda x: evaluateAtkDef(x[0].board, 'b'), reverse=True)
-    #else:
-    #    spawns = sorted(spawns, key = lambda x: evaluateAtkDef(x[0].board, 'r'))
-    #    spreads = sorted(spreads, key = lambda x: evaluateAtkDef(x[0].board, 'r'))
+    chosenSuccessors = successors[0:(b-1)]
 
-    #b = min(len(spreads), BREADTH - 1)
+    if bestForPower in chosenSuccessors:
+        chosenSuccessors.remove(bestForPower)
+    else:
+        chosenSuccessors.pop()
 
-    #successors = spreads[0:(b-1)]
-
-    #if spawns:
-    #    successors.append(spawns[0])
-    #elif len(spreads) > b:
-    #    successors.append(spreads[b])
-
-    #return successors
+    chosenSuccessors.insert(0, bestForPower)
+      
+    return chosenSuccessors
 
 
 
@@ -390,7 +431,7 @@ class minimax:
         #    if alpha >= beta:
         #        return beta
         for s in get_successors(state, colour):
-            v = max(v, self.min_value(s[0], alpha, beta, new_colour, depth - 1))
+            v = max(v, self.min_value(s, alpha, beta, new_colour, depth - 1))
 
             alpha = max(alpha, v)
             if alpha >= beta:
@@ -434,7 +475,7 @@ class minimax:
         #        return v
         #    beta = min(beta, v)
         for s in get_successors(state, colour):
-            v = min(v, self.max_value(s[0], alpha, beta, new_colour, depth - 1))
+            v = min(v, self.max_value(s, alpha, beta, new_colour, depth - 1))
 
             if v <= alpha:
                 return v
@@ -470,7 +511,7 @@ class minimax:
         #        beta = min(beta, best_score)
         if colour == 'r':
             best_score = -math.inf
-            for s in get_successors(board, colour):
+            for s in get_root_successors(board, colour):
                 #print("current successor for red")
                 #print(render_board(s[0].board))
                 score = self.min_value(s[0], alpha, beta, ENEMY[colour], DEPTH - 1)
@@ -485,7 +526,7 @@ class minimax:
         
         else:
             best_score = math.inf
-            for s in get_successors(board, colour):
+            for s in get_root_successors(board, colour):
                 score = self.max_value(s[0], alpha, beta, ENEMY[colour], DEPTH - 1)
 
                 if score < best_score:
