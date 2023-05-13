@@ -10,12 +10,11 @@ from .coverage import getCoverages, peaceful, evaluateAtkDef
 #import random
 import math
 
-# This is the entry point for your game playing agent. Currently the agent
-# simply spawns a token at the centre of the board if playing as RED, and
-# spreads a token at the centre of the board if playing as BLUE. This is
-# intended to serve as an example of how to use the referee API -- obviously
-# this is not a valid strategy for actually playing the game!
+# This is the entry point for your game playing agent. the agent will do an
+# action given the state of the board through the calculations of minimax 
+# algorithm with alpha-beta pruning.
 
+# intitialise the constants
 BREADTH = 10
 DEPTH = 4
 
@@ -35,12 +34,12 @@ class Agent:
     def __init__(self, color: PlayerColor, **referee: dict):
         """
         Initialise the agent.
-        """
-          
+        """  
         self.colour = None
         self.board = Board()
-        #self.Minimax = minimax(self.board)
         self.Minimax = minimax()
+        
+        # select the match color:
         match color:
             case PlayerColor.RED:
                 print("Testing: I am playing as red")
@@ -54,19 +53,19 @@ class Agent:
         Return the next action to take.
         """
         ######## calling minimax algorithm for next move ########
+        # if its not at an end game situation find best move VIA minimax
         if (self.board.checkEndGame(self.colour) == True and self.board.endgameAction(self.colour) != None):
                 next_move = self.board.endgameAction(self.colour)
         else:
                 next_move = self.Minimax.next_move(self.board, self.colour)
-            
+
+        # return the action    
         if (next_move[0] == 'spread'):
                 return SpreadAction(HexPos(next_move[1][0], next_move[1][1]), HexDir(next_move[2]))
         else:
                 return SpawnAction(HexPos(next_move[1][0], next_move[1][1]))
        
-                    
-                   
-    ### DOES IT ACCOUNT FOR OPPONENT"S SPAWNS AND SPREADS? AND PLAYER SPREADS THAT GOES OVER MAX POWER?
+    
     def turn(self, color: PlayerColor, action: Action, **referee: dict):
         """
         Update the agent with the last player's action.
@@ -75,19 +74,13 @@ class Agent:
 
         match action:
             case SpawnAction(cell):
-                #print(f"Testing: {color} SPAWN at {cell}")
                 c = 'r'
                 if (color == PlayerColor.BLUE):
                     c = 'b'
-                #self.board.totalPower += 1
                 self.board.spawn((cell.r, cell.q), c)
                 return
-            
-            ### NEED TO RE-CALCULATE POWER for any SPREADS?
             case SpreadAction(cell, direction):
-                #print(f"Testing: {color} SPREAD from {cell}, {direction}")
                 self.board.spread((cell.r, cell.q), (direction.value.r, direction.value.q))
-                #self.board.totalPower = getTotalPower(self.board.board)
                 return
 
 ################################################################################
@@ -108,7 +101,6 @@ class Board:
         """ Spawns a piece (its position) on the board """
         self.board[position] = (color, 1)
     
-
     def countPieces(self, color: str):
         """ Counts the number of pieces on the board for a given color """
         count = 0
@@ -218,15 +210,13 @@ def get_root_successors(state: Board, colourToMove):
     # do we need to copy board into state? just use the board argument
     temp = copy.deepcopy(state)
     
-    # loop through the board and find all player's piece
-    # when you land on a piece perform a spread in 6 directions
-    # if it is empty spawn a piece
-    # add to the successors list
-    
+   
+    # initialise the coverages
     coverages = getCoverages(state.board)
     colourToMoveCoverage = None
     colourJustPlayedCoverage = None
 
+    # set the coverages
     if colourToMove == 'r':
         colourToMoveCoverage = coverages[0]
         colourJustPlayedCoverage = coverages[1]
@@ -234,14 +224,18 @@ def get_root_successors(state: Board, colourToMove):
         colourToMoveCoverage = coverages[1]
         colourJustPlayedCoverage = coverages[0]
     
+    # loop through the board and find all player's piece
+    # when you land on a piece perform a spread in 6 directions
+    # if it is empty spawn a piece
+    # add to the successors list
     for position in state.board.keys():
         if(state.board.get(position)[0] == colourToMove):
             for direction in DIRECTIONS:
                 temp.spread(position, direction)
                 successors.append((temp, ('spread', position, direction)))
-
                 temp = copy.deepcopy(state) # reset temp to original state
-
+    
+    # for spawn action
     if getTotalPower(state.board) < MAX_BOARD_POW:
         for r in range(DIM):
             for q in range(DIM):
@@ -249,8 +243,8 @@ def get_root_successors(state: Board, colourToMove):
                     playerCoverage = colourToMoveCoverage[r,q]
                     if playerCoverage >= colourJustPlayedCoverage[(r,q)]:
                         temp.spawn((r, q), colourToMove)
+                        # add the spawn to the successors
                         successors.append((temp, ('spawn', (r, q), colourToMove)))
-
                         temp = copy.deepcopy(state)
 
     bestForPower = None
@@ -279,7 +273,6 @@ def get_successors(state: Board, colourToMove):
     """ gets the successors, possible states we need to explore """
     successors = []
 
-    # do we need to copy board into state? just use the board argument
     temp = copy.deepcopy(state)
     
     # loop through the board and find all player's piece
@@ -303,7 +296,6 @@ def get_successors(state: Board, colourToMove):
             for direction in DIRECTIONS:
                 temp.spread(position, direction)
                 successors.append(temp)
-
                 temp = copy.deepcopy(state) # reset temp to original state
     
     if getTotalPower(state.board) < MAX_BOARD_POW:
@@ -314,7 +306,6 @@ def get_successors(state: Board, colourToMove):
                     if playerCoverage >= colourJustPlayedCoverage[(r,q)]:
                         temp.spawn((r, q), colourToMove)
                         successors.append(temp)
-
                         temp = copy.deepcopy(state)
 
     bestForPower = None
@@ -393,7 +384,7 @@ class minimax:
         board = state.board
         
         new_colour = ENEMY[colour]
-
+       
         if countColour(board,'r') == 0:
             return -1000
         elif countColour(board,'b') == 0:
@@ -419,20 +410,20 @@ class minimax:
     def min_value(self, state: Board, alpha, beta, colour, depth):
         board = state.board
         new_colour = ENEMY[colour]
-
+        
         if countColour(board, 'r') == 0:
             return -1000
         elif countColour(board, 'b') == 0:
             return 1000
 
-        if peaceful(board):
+        if peaceful(board): 
             return evaluatePower(board)
 
         if depth == 0:
             return evaluateAtkDef(board, colour)[0] 
         
         v = math.inf
-
+                
         for s in get_successors(state, colour):
             v = min(v, self.max_value(s, alpha, beta, new_colour, depth - 1))
 
@@ -452,12 +443,12 @@ class minimax:
         if colour == 'r':
             best_score = -math.inf
             for s in get_root_successors(board, colour):
+                
                 score = self.min_value(s[0], alpha, beta, ENEMY[colour], DEPTH - 1)
                 
                 if score > best_score:
                     best_score = score
                     next_move = s
-
                 alpha = max(alpha, best_score)
         
         else:
