@@ -179,52 +179,6 @@ def peaceful(board):
     
     return True
 
-## gives each node's power (or something else?) to a certain player based on
-## the node's colour and 
-#def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
-#    # 1. generate two arrays 7x7 ? for both colours
-#    # 2. go over every node, and add to covered squares in array based on colour
-#    # 3. go over every node again, but compare array coverages based on colour
-#    # 4.    for every node ... add power based on who wins
-#    # 5. if colourToMove is RED ... remove blue's best capture if available
-
-#    # 1. 
-#    colourToMoveCoverage = generateCoverageDict()
-#    colourJustPlayedCoverage = generateCoverageDict()
-
-#    # MAYBE ONLY NEED LIST FOR colourJustPlayed ... to remove the best capture for that colour
-#    colourToMoveScore = 0
-#    maxJustPlayedPowerCoverage = 0
-
-#    # 2.
-#    for (position, (colour, power)) in board.items():
-#        for covered in COVERAGE_POSITION_POWER[(position, power)]:
-#            if colour == colourToMove:
-#                colourToMoveCoverage[covered] += 1
-#            else:
-#                colourJustPlayedCoverage[covered] += 1
-    
-#    # 3.
-#    for (position, (colour, power)) in board.items():
-#        if colour == colourToMove:
-#            if colourToMoveCoverage[position] > colourJustPlayedCoverage[position]:
-#                colourToMoveScore += power
-#                #colourToMoveScores.append(power)
-#            else:
-#                colourToMoveScore -= power
-#        else:
-#            if colourJustPlayedCoverage[position] > colourToMoveCoverage[position]:
-#                colourToMoveScore -= power
-#                if power > maxJustPlayedPowerCoverage:
-#                    maxJustPlayedPowerCoverage = power
-#            else:
-#                colourToMoveScore += power
-
-#    if colourToMove == 'r':
-#        return colourToMoveScore + maxJustPlayedPowerCoverage
-#    else:
-#        return -colourToMoveScore - maxJustPlayedPowerCoverage
-
 
 # gives each node's power (or something else?) to a certain player based on
 # the node's colour and 
@@ -247,16 +201,11 @@ def evaluateAtkDef(board: dict[tuple, tuple], colourToMove):
     # 2.
     for (position, (colour, power)) in board.items():
         for (coveredPosition, coveredTimes) in COVERAGE_POSITION_POWER[(position, power)].items():
-            #print(coveredPosition)
-            #print(coveredTimes)
-            #print(colourJustPlayedCoverage.keys())
-            #print(COVERAGE_POSITION_POWER[(position,power)])
             if colour == colourToMove:
                 colourToMoveCoverage[coveredPosition] += coveredTimes
             else:
                 colourJustPlayedCoverage[coveredPosition] += coveredTimes
-    #print(colourToMoveCoverage)
-    #print(colourJustPlayedCoverage)
+
     # 3.
     for (position, (defendingColour, power)) in board.items():
         secondaryOverlappingScore += (colourToMoveCoverage[position] - colourJustPlayedCoverage[position])
