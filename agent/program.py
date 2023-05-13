@@ -15,7 +15,7 @@ import math
 # algorithm with alpha-beta pruning.
 
 # intitialise the constants
-BREADTH = 10
+BREADTH = 6
 DEPTH = 4
 
 DIM = 7
@@ -54,10 +54,7 @@ class Agent:
         """
         ######## calling minimax algorithm for next move ########
         # if its not at an end game situation find best move VIA minimax
-        if (self.board.checkEndGame(self.colour) == True and self.board.endgameAction(self.colour) != None):
-                next_move = self.board.endgameAction(self.colour)
-        else:
-                next_move = self.Minimax.next_move(self.board, self.colour)
+        next_move = self.Minimax.next_move(self.board, self.colour)
 
         # return the action    
         if (next_move[0] == 'spread'):
@@ -169,34 +166,6 @@ class Board:
     
     def getKeys(self):
         return self.board.keys()
-    
-    def checkEndGame(self, colour):
-        """ Checks if the game is about to end for the other player """
-        c = 'r'
-        if colour == 'r':
-            c = 'b'
-        
-        if  countColour(self.board, c) == 1:
-            return True
-        else:
-            return False
-    
-    def endgameAction(self, colour):
-        """ Performs the action for the endgame """
-        # find the last piece on the board
-        c = 'r'
-        if colour == 'r':
-            c = 'b'
-        temp = copy.deepcopy(self)
-        for piece in self.board.keys():
-            if self.board.get(piece)[0] == colour:
-                # spread the piece in all directions
-                for direction in DIRECTIONS:
-                    temp.spread(piece, direction)
-                    if countColour(temp.board, c) == 0:
-                        return ('spread', piece, direction)
-                    temp = copy.deepcopy(self) # reset temp to original state
-        return None
 
 
 ################################################################################
@@ -248,6 +217,7 @@ def get_root_successors(state: Board, colourToMove):
                         temp = copy.deepcopy(state)
 
     bestForPower = None
+
     # person just moved is r --> next to move is b, vice versa
     if colourToMove == 'r':
         successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0].board, 'b'), reverse=True)
@@ -256,17 +226,19 @@ def get_root_successors(state: Board, colourToMove):
         successors = sorted(successors, key = lambda x: evaluateAtkDef(x[0].board, 'r'))
         bestForPower = min(successors, key = lambda x: evaluatePower(x[0].board))
     
+    # choose the top 'b' successors
     b = min(len(successors), BREADTH)
-
     chosenSuccessors = successors[0:(b-1)]
 
+    # add the board with best power as a greedy component to the list of successors to explore
     if bestForPower in chosenSuccessors:
         chosenSuccessors.remove(bestForPower)
     else:
         chosenSuccessors.pop()
 
     chosenSuccessors.insert(0, bestForPower)
-      
+    
+    # return chosen list of successors
     return chosenSuccessors
 
 def get_successors(state: Board, colourToMove):
@@ -317,10 +289,11 @@ def get_successors(state: Board, colourToMove):
         successors = sorted(successors, key = lambda x: evaluateAtkDef(x.board, 'r'))
         bestForPower = min(successors, key = lambda x: evaluatePower(x.board))
     
+    # choose the top 'b' successors
     b = min(len(successors), BREADTH)
-
     chosenSuccessors = successors[0:(b-1)]
 
+    # add the board with best power as a greedy component to the list of successors to explore
     if bestForPower in chosenSuccessors:
         chosenSuccessors.remove(bestForPower)
     else:

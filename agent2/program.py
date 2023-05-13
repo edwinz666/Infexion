@@ -16,7 +16,7 @@ import math
 # intended to serve as an example of how to use the referee API -- obviously
 # this is not a valid strategy for actually playing the game!
 
-BREADTH = 10
+BREADTH = 8
 DEPTH = 3
 
 DIM = 7
