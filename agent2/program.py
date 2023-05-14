@@ -16,8 +16,8 @@ import math
 # intended to serve as an example of how to use the referee API -- obviously
 # this is not a valid strategy for actually playing the game!
 
-BREADTH = 8
-DEPTH = 3
+BREADTH = 5
+DEPTH = 5
 
 DIM = 7
 MAX_POWER = DIM - 1
@@ -54,10 +54,7 @@ class Agent:
         Return the next action to take.
         """
         ######## calling minimax algorithm for next move ########
-        if (self.board.checkEndGame(self.colour) == True and self.board.endgameAction(self.colour) != None):
-                next_move = self.board.endgameAction(self.colour)
-        else:
-                next_move = self.Minimax.next_move(self.board, self.colour)
+        next_move = self.Minimax.next_move(self.board, self.colour)
             
         if (next_move[0] == 'spread'):
                 return SpreadAction(HexPos(next_move[1][0], next_move[1][1]), HexDir(next_move[2]))
