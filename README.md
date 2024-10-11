@@ -12,10 +12,10 @@ These agents test different breadth/depth of the minimax search to compare
 effectiveness of these parameters. The 'greedyAgent' and 'randomAgent' are
 included for comparison
 
-Game specifications found in the file:
+Game specifications found in the file:  
     AI_2023_Project_PartB.pdf
 
 A game sample of agents 'agent' and 'agent2' playing can be conducted using
-the following command:
+the following command:  
     python -m referee agent agent2
 
